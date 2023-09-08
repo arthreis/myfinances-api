@@ -46,6 +46,8 @@ class Category {
   user: User;
 
   transactionsCount?: number;
+
+  transactionsTotalValue?: number;
 }
 
 export default Category;

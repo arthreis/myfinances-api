@@ -6,7 +6,9 @@ export default class BalanceController {
   async index(req: Request, res: Response): Promise<Response> {
     const { id: user_id } = req.user;
 
-    const balance = await TransactionsRepository.getBalance(user_id);
+    const { period } = req.query;
+
+    const balance = await TransactionsRepository.getBalanceByPeriod(user_id, period as string);
 
     return res.json(balance);
   }

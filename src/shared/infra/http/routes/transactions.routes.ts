@@ -9,6 +9,7 @@ import TransactionsController from '../controllers/transactions/TransactionsCont
 import ImportTransactionsController from '../controllers/transactions/ImportTransactionsController';
 import BalanceController from '../controllers/transactions/BalanceController';
 import GetTransactionsCountByCategoryController from '../controllers/transactions/GetTransactionsCountByCategoryController';
+import GetTransactionsValueByCategoryController from '../controllers/transactions/GetTransactionsValueByCategoryController';
 import GetTransactionsOverviewController from '../controllers/transactions/GetTransactionsOverviewController';
 import GetBalanceGraphController from '../controllers/transactions/GetBalanceGraphController';
 
@@ -21,25 +22,19 @@ const getBalanceGraphController = new GetBalanceGraphController();
 const getTransactionsCountByCategoryController = new GetTransactionsCountByCategoryController();
 const getTransactionsOverviewController = new GetTransactionsOverviewController();
 const importTranscationsController = new ImportTransactionsController();
+const getTransactionsValueByCategoryController = new GetTransactionsValueByCategoryController();
 
 transactionsRouter.use(isAuthenticated);
 
 transactionsRouter.get('/', transactionsController.index);
 transactionsRouter.post('/', transactionsController.store);
+transactionsRouter.put('/:id', transactionsController.update);
 transactionsRouter.delete('/:id', transactionsController.delete);
-transactionsRouter.post(
-  '/import',
-  upload.single('file'),
-  importTranscationsController.store,
-);
+transactionsRouter.post('/import', upload.single('file'), importTranscationsController.store,);
 transactionsRouter.get('/balance', balanceController.index);
-transactionsRouter.get(
-  '/count-by-category',
-  getTransactionsCountByCategoryController.index,
-);
-transactionsRouter.get(
-  '/overview-data',
-  getTransactionsOverviewController.index,
-);
+transactionsRouter.get('/count-by-category', getTransactionsCountByCategoryController.index,);
+transactionsRouter.get('/value-by-category', getTransactionsValueByCategoryController.index,);
+transactionsRouter.get('/overview-data', getTransactionsOverviewController.index,);
 transactionsRouter.get('/balance-graph', getBalanceGraphController.index);
+
 export default transactionsRouter;

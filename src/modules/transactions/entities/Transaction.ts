@@ -54,6 +54,12 @@ class Transaction {
 
   @UpdateDateColumn()
   updated_at: Date;
+
+  @Column()
+  transaction_date: Date;
+
+  @Column()
+  description: string;
 }
 
 export default Transaction;
