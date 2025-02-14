@@ -7,7 +7,7 @@ import Transaction from '../../../../../modules/transactions/entities/Transactio
 export const dataSource = new DataSource({
   migrationsTableName: 'migrations',
   type: 'postgres',
-  host: process.env.DB_HOST ?? '192.168.0.101',
+  host: process.env.DB_HOST ?? 'localhost',
   port: parseInt(process.env.DB_PORT!) || 5432,
   username: 'postgres',
   password: 'docker',

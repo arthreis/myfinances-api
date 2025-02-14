@@ -11,7 +11,6 @@ import AppError from './shared/errors/AppError';
 import ConfirmActionError from './shared/errors/ConfirmActionError';
 
 import createConnection from './shared/infra/typeorm';
-// import './shared/infra/typeorm';
 createConnection();
 
 const app = express();

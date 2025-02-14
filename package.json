@@ -8,7 +8,8 @@
   },
   "scripts": {
     "build": "tsc",
-    "dev:server": "ts-node-dev --inspect --ignore-watch node_modules -- src/shared/infra/http/server.ts",
+    "dev:server": "ts-node-dev --env-file=.env --inspect --ignore-watch node_modules -- src/shared/infra/http/server.ts",
+    "prod:server": "ts-node-dev --env-file=.env.production --inspect --ignore-watch node_modules -- src/shared/infra/http/server.ts",
     "start": "ts-node src/shared/infra/http/server.ts",
     "typeorm": "ts-node-dev ./node_modules/typeorm/cli.js",
     "typeorm3": "npm run typeorm migration:run -- -d src/shared/infra/typeorm/config/datasources/PostgresDatasource.ts",
@@ -39,7 +40,7 @@
     "@types/bcryptjs": "^2.4.2",
     "@types/express": "4.17.17",
     "@types/express-serve-static-core": "4.17.35",
-    "@types/jest": "^29.5.2",
+    "@types/jest": "^29.5.13",
     "@types/jsonwebtoken": "^9.0.2",
     "@types/multer": "^1.4.7",
     "@types/supertest": "^2.0.12",
