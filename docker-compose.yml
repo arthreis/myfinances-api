@@ -1,0 +1,15 @@
+services:
+  db:
+    image: bitnami/postgresql:17
+    container_name: myfinances-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: docker
+      POSTGRES_DB: myfinances
+    ports:
+      - "5432:5432"
+    volumes:
+      - myfinances_db_data:/var/lib/postgresql/data
+
+volumes:
+  myfinances_db_data:
