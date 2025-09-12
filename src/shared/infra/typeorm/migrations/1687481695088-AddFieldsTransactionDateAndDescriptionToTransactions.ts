@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner, TableColumn } from "typeorm"
+import { type MigrationInterface, type QueryRunner, TableColumn } from "typeorm"
 
 export default class AddFieldsTransactionDateAndDescriptionToTransactions1687481695088 implements MigrationInterface {
 

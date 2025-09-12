@@ -1,4 +1,4 @@
-import csvParse from 'csv-parse';
+import * as csvParse from 'csv-parse';
 import fs from 'fs';
 import { In } from 'typeorm';
 import Transaction from '../entities/Transaction';

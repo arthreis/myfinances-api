@@ -3,7 +3,6 @@ import AppError from '../../../shared/errors/AppError';
 import {TransactionsRepository} from '../repositories/TransactionsRepository';
 
 import Transaction from '../entities/Transaction';
-import Category from '../../categories/entities/Category';
 import { dataSource } from '../../../shared/infra/typeorm/config/datasources/ormconfig';
 import { parse } from 'date-fns';
 

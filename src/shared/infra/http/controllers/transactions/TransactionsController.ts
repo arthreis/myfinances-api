@@ -4,7 +4,7 @@ import {TransactionsRepository} from '../../../../../modules/transactions/reposi
 import CreateTransactionService from '../../../../../modules/transactions/services/CreateTransactionService';
 import DeleteTransactionService from '../../../../../modules/transactions/services/DeleteTransactionService';
 import { Between } from 'typeorm';
-import { addMonths, parse, subMonths } from 'date-fns';
+import { addMonths, subMonths } from 'date-fns';
 import UpdateTransactionService from '../../../../../modules/transactions/services/UpdateTransactionService';
 
 export default class TransactionsController {

@@ -3,13 +3,10 @@ import {
   isEqual,
   getTime,
   addDays,
-  subMonths,
   addWeeks,
   startOfWeek,
   endOfDay,
   lastDayOfMonth,
-  format,
-  startOfDay,
   parse,
 } from 'date-fns';
 
@@ -32,11 +29,6 @@ export function generateDateRange(
 ): any {
   let curr = startDate;
   const result = [];
-
-  // while (isBefore(curr, endDate) || isEqual(curr, endDate)) {
-  //   result.push(getTime(curr));
-  //   curr = addFn[period](curr, 1);
-  // }
 
   while (isBefore(curr, endDate) || isEqual(curr, endDate)) {
     if (period === 'week') {

@@ -3,8 +3,6 @@ import { Request, Response } from 'express';
 import { TransactionsRepository } from '../../../../../modules/transactions/repositories/TransactionsRepository';
 import Category from '../../../../../modules/categories/entities/Category';
 import { dataSource } from '../../../typeorm/config/datasources/ormconfig';
-import { Between } from 'typeorm';
-import { addDays, addMonths, endOfDay } from 'date-fns';
 
 export default class GetTransactionsOverviewController {
   async index(req: Request, res: Response): Promise<Response> {

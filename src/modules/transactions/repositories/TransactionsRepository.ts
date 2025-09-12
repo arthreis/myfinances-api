@@ -1,6 +1,6 @@
 import Transaction from '../entities/Transaction';
 import { dataSource } from '../../../shared/infra/typeorm/config/datasources/ormconfig';
-import { format, parse } from 'date-fns';
+import { format } from 'date-fns';
 
 interface Balance {
   income: number;
