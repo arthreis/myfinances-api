@@ -1,0 +1,28 @@
+
+# ------------------------------------------------------------
+# FORMATO DE COMMIT
+# ------------------------------------------------------------
+# <tipo>(<escopo opcional>): <descrição curta>
+#
+# Tipos mais comuns:
+# feat     -> nova funcionalidade
+# fix      -> correção de bug
+# docs     -> documentação
+# style    -> formatação/estilo, linting ou semântico, sem alteração de lógica
+# refactor -> refatoração sem alterar comportamento
+# test     -> adicionar/ajustar testes
+# chore    -> tarefas gerais (build, dependências, scripts)
+#
+# Exemplos:
+# feat(auth): adicionar login via Google
+# fix(users): corrigir hash de senha
+# docs(readme): atualizar instruções de instalação
+# chore(deps): atualizar TypeORM para a versão 0.3.0
+#
+# Corpo do commit (opcional)
+# - Explique O QUE foi feito e POR QUE, se necessário
+#
+# Footer (opcional)
+# - BREAKING CHANGE: descrição da mudança que quebra compatibilidade
+# - Closes #<issue_number>
+# ------------------------------------------------------------
