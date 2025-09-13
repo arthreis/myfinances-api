@@ -17,16 +17,16 @@ class Category {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   title: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   icon: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   background_color_light: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   background_color_dark: string;
 
   @CreateDateColumn()
@@ -38,7 +38,7 @@ class Category {
   @OneToMany(() => Transaction, transaction => transaction.category)
   transactions: Transaction[];
 
-  @Column()
+  @Column({ type: 'varchar' })
   user_id: string;
 
   @ManyToOne(() => User, user => user.categories)

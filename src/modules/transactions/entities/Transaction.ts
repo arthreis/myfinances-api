@@ -11,15 +11,23 @@ import User from '../../users/entities/User';
 
 import Category from '../../categories/entities/Category';
 
+export enum TransactionType {
+  INCOME = 'income',
+  OUTCOME = 'outcome',
+}
+
 @Entity('transactions')
 class Transaction {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   title: string;
 
-  @Column()
+  @Column({
+    type: 'enum',
+    enum: TransactionType,
+  })
   type: 'income' | 'outcome';
 
   @Column({
@@ -35,14 +43,14 @@ class Transaction {
   })
   value: number;
 
-  @Column()
+  @Column({ type: 'varchar' })
   category_id: string;
 
   @ManyToOne(() => Category, category => category.transactions)
   @JoinColumn({ name: 'category_id' })
   category: Category;
 
-  @Column()
+  @Column({ type: 'varchar' })
   user_id: string;
 
   @ManyToOne(() => User, user => user.transactions)
@@ -55,10 +63,10 @@ class Transaction {
   @UpdateDateColumn()
   updated_at: Date;
 
-  @Column()
+  @Column({ type: 'timestamp with time zone', default: () => 'CURRENT_TIMESTAMP' })
   transaction_date: Date;
 
-  @Column()
+  @Column({ type: 'varchar' })
   description: string;
 }
 
