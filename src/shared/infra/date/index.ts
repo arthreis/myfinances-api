@@ -66,25 +66,15 @@ export function calculatePeriod(period: 'week' | 'month', date: string): PeriodD
   console.log(`Base date: ${date}`);
   console.log(`Base date: ${parse(date, 'yyyy-MM', new Date())}`);
 
-  // parse(date, 'yyyy-MM', new Date());
-
   let endDate;
   let startDate;
 
   if (date) {
     baseDate = utcToZonedTime(new Date(parse(date, 'yyyy-MM', new Date())), 'America/Sao_Paulo');
     console.log('By month ...');
-    // startDate = startOfDay(new Date(format(baseDate, 'yyyy-MM-01')));
-    // endDate = lastDayOfMonth(endOfDay(baseDate));
     startDate = parse(date, 'yyyy-MM', new Date()), 'yyyy-MM-01';
     endDate = lastDayOfMonth(parse(date, 'yyyy-MM', new Date())), 'yyyy-MM-dd';
   } else {
-    //TODO antigo
-    // baseDate = utcToZonedTime(new Date(parse(date, 'yyyy-MM', new Date())), 'America/Sao_Paulo');
-    // console.log('By week or month [original]...');
-    // endDate = endOfDay(baseDate);
-    // startDate = startFn[period](baseDate);
-
     baseDate = utcToZonedTime(new Date(parse(date, 'yyyy-MM', new Date())), 'America/Sao_Paulo');
     endDate = endOfDay(baseDate);
     startDate = startFn[period](baseDate);

@@ -4,8 +4,8 @@ import { Connection, getRepository, getConnection } from 'typeorm';
 
 import createConnection from '../shared/infra/typeorm';
 
-import Transaction from '../modules/transactions/entities/Transaction';
-import Category from '../modules/categories/entities/Category';
+import Transaction from '../modules/transactions/entities/Transaction.js';
+import Category from '../modules/categories/entities/Category.js';
 
 import app from '../app';
 

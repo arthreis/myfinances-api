@@ -1,10 +1,10 @@
 import * as csvParse from 'csv-parse';
 import fs from 'fs';
 import { In } from 'typeorm';
-import Transaction from '../entities/Transaction';
-import { TransactionsRepository } from '../repositories/TransactionsRepository';
-import Category from '../../categories/entities/Category';
-import { dataSource } from '../../../shared/infra/typeorm/config/datasources/ormconfig';
+import Transaction from '../entities/Transaction.js';
+import { TransactionsRepository } from '../repositories/TransactionsRepository.js';
+import Category from '../../categories/entities/Category.js';
+import { dataSource } from '../../../shared/infra/typeorm/config/datasources/ormconfig.js';
 
 interface Request {
   user_id: string;
@@ -33,8 +33,8 @@ class ImportTransactionsService {
       parseCSV.on('end', resolve);
     });
 
-    const categories: any[] = [];
-    const transactions: any[] = [];
+    const categories: string[] = [];
+    const transactions: Partial<Transaction>[] = [];
 
     lines.forEach(line => {
       transactions.push({

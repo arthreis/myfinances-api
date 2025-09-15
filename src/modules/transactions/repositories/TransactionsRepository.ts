@@ -1,5 +1,5 @@
-import Transaction from '../entities/Transaction';
-import { dataSource } from '../../../shared/infra/typeorm/config/datasources/ormconfig';
+import Transaction from '../entities/Transaction.js';
+import { dataSource } from '../../../shared/infra/typeorm/config/datasources/ormconfig.js';
 import { format } from 'date-fns';
 
 interface Balance {

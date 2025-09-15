@@ -1,11 +1,11 @@
 import { Request, Response } from 'express';
 
-import { TransactionsRepository } from '../../../../../modules/transactions/repositories/TransactionsRepository';
+import { TransactionsRepository } from '../../../../../modules/transactions/repositories/TransactionsRepository.js';
 import {
   calculatePeriod,
   generateDateRange,
   getPeriodUnit,
-} from '../../../date';
+} from '../../../date/index.js';
 import { format } from 'date-fns';
 
 interface BalanceGraphResponse {
@@ -16,7 +16,8 @@ interface BalanceGraphResponse {
 export default class GetBalanceGraphController {
   async index(req: Request, res: Response): Promise<Response> {
     const { id: user_id } = req.user;
-    let { period, date } = req.query;
+    let { period } = req.query;
+    const { date } = req.query;
 
     if (!period) period = 'week';
 

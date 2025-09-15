@@ -1,11 +1,11 @@
 import { Router } from 'express';
 
-import sessionsRouter from './sessions.routes';
-import transactionsRouter from './transactions.routes';
-import usersRouter from './users.routes';
-import categoriesRouter from './categories.routes';
-import homeRouter from './home.routes';
-import healthRouter from './health.routes';
+import sessionsRouter from './sessions.routes.js';
+import transactionsRouter from './transactions.routes.js';
+import usersRouter from './users.routes.js';
+import categoriesRouter from './categories.routes.js';
+import homeRouter from './home.routes.js';
+import healthRouter from './health.routes.js';
 
 const routes = Router();
 

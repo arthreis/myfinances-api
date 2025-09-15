@@ -1,9 +1,9 @@
-import { dataSource } from './../../../shared/infra/typeorm/config/datasources/ormconfig';
+import { dataSource } from './../../../shared/infra/typeorm/config/datasources/ormconfig.js';
 import { compare } from 'bcrypt';
 import jwt, { type SignOptions } from 'jsonwebtoken';
 
-import User from '../entities/User';
-import AppError from '../../../shared/errors/AppError';
+import User from '../entities/User.js';
+import AppError from '../../../shared/errors/AppError.js';
 
 interface Request {
   email: string;

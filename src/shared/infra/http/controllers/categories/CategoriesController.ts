@@ -1,12 +1,12 @@
 import { Request, Response } from 'express';
 
-import Category from '../../../../../modules/categories/entities/Category';
+import Category from '../../../../../modules/categories/entities/Category.js';
 
-import CreateCategoryService from '../../../../../modules/categories/services/CreateCategoryService';
-import UpdateCategoryService from '../../../../../modules/categories/services/UpdateCategoryService';
-import DeleteCategoryService from '../../../../../modules/categories/services/DeleteCategoryService';
-import AppError from '../../../../errors/AppError';
-import { dataSource } from '../../../typeorm/config/datasources/ormconfig';
+import CreateCategoryService from '../../../../../modules/categories/services/CreateCategoryService.js';
+import UpdateCategoryService from '../../../../../modules/categories/services/UpdateCategoryService.js';
+import DeleteCategoryService from '../../../../../modules/categories/services/DeleteCategoryService.js';
+import AppError from '../../../../errors/AppError.js';
+import { dataSource } from '../../../typeorm/config/datasources/ormconfig.js';
 
 export default class CategoriesController {
   async index(req: Request, res: Response): Promise<Response> {
