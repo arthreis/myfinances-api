@@ -1,7 +1,7 @@
 import { Router } from 'express';
 
-import isAuthenticated from '../middlewares/isAuthenticated';
-import CategoriesController from '../controllers/categories/CategoriesController';
+import isAuthenticated from '@http/middlewares/isAuthenticated.js';
+import CategoriesController from '@controllers/categories/CategoriesController.js';
 
 const categoriesRouter = Router();
 categoriesRouter.use(isAuthenticated);

@@ -9,8 +9,8 @@ import {
   JoinColumn,
 } from 'typeorm';
 
-import Transaction from '../../transactions/entities/Transaction';
-import User from '../../users/entities/User';
+import Transaction from '../../transactions/entities/Transaction.js';
+import User from '../../users/entities/User.js';
 
 @Entity('categories')
 class Category {

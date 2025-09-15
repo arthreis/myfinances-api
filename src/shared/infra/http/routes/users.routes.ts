@@ -1,7 +1,7 @@
 import { Router } from 'express';
 
-import UsersController from '../controllers/users/UsersController';
-import isAuthenticated from '../middlewares/isAuthenticated';
+import UsersController from '@controllers/users/UsersController.js';
+import isAuthenticated from '@http/middlewares/isAuthenticated.js';
 
 const usersRouter = Router();
 const usersController = new UsersController();

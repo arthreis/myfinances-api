@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
 
-import User from '../../../../../modules/users/entities/User';
+import User from '@modules/users/entities/User.js';
 
-import CreateUserService from '../../../../../modules/users/services/CreateUserService';
-import AppError from '../../../../errors/AppError';
-import { dataSource } from '../../../typeorm/config/datasources/ormconfig';
+import CreateUserService from '@modules/users/services/CreateUserService.js';
+import AppError from '../../../../errors/AppError.js';
+import { dataSource } from '../../../typeorm/config/datasources/ormconfig.js';
 
 export default class UsersController {
   async store(req: Request, res: Response): Promise<Response> {

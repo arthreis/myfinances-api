@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 
-import ImportTransactionsService from '../../../../../modules/transactions/services/ImportTransactionsService';
+import ImportTransactionsService from '../../../../../modules/transactions/services/ImportTransactionsService.js';
 
 export default class ImportTransactionsController {
   async store(req: Request, res: Response): Promise<Response> {

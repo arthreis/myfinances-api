@@ -1,17 +1,17 @@
 import { Router } from 'express';
 
 import multer from 'multer';
-import uploadConfig from '../../../../config/upload';
+import uploadConfig from 'config/upload.js';
 
-import isAuthenticated from '../middlewares/isAuthenticated';
+import isAuthenticated from '@http/middlewares/isAuthenticated.js';
 
-import TransactionsController from '../controllers/transactions/TransactionsController';
-import ImportTransactionsController from '../controllers/transactions/ImportTransactionsController';
-import BalanceController from '../controllers/transactions/BalanceController';
-import GetTransactionsCountByCategoryController from '../controllers/transactions/GetTransactionsCountByCategoryController';
-import GetTransactionsValueByCategoryController from '../controllers/transactions/GetTransactionsValueByCategoryController';
-import GetTransactionsOverviewController from '../controllers/transactions/GetTransactionsOverviewController';
-import GetBalanceGraphController from '../controllers/transactions/GetBalanceGraphController';
+import TransactionsController from '@controllers/transactions/TransactionsController.js';
+import ImportTransactionsController from '@controllers/transactions/ImportTransactionsController.js';
+import BalanceController from '@controllers/transactions/BalanceController.js';
+import GetTransactionsCountByCategoryController from '@controllers/transactions/GetTransactionsCountByCategoryController.js';
+import GetTransactionsValueByCategoryController from '@controllers/transactions/GetTransactionsValueByCategoryController.js';
+import GetTransactionsOverviewController from '@controllers/transactions/GetTransactionsOverviewController.js';
+import GetBalanceGraphController from '@controllers/transactions/GetBalanceGraphController.js';
 
 const upload = multer(uploadConfig);
 

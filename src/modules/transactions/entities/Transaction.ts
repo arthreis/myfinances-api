@@ -7,9 +7,9 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import User from '../../users/entities/User';
+import User from '../../users/entities/User.js';
 
-import Category from '../../categories/entities/Category';
+import Category from '../../categories/entities/Category.js';
 
 export enum TransactionType {
   INCOME = 'income',

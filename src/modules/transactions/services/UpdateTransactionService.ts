@@ -1,9 +1,9 @@
-import AppError from '../../../shared/errors/AppError';
+import AppError from '../../../shared/errors/AppError.js';
 
-import {TransactionsRepository} from '../repositories/TransactionsRepository';
+import {TransactionsRepository} from '../repositories/TransactionsRepository.js';
 
-import Transaction from '../entities/Transaction';
-import { dataSource } from '../../../shared/infra/typeorm/config/datasources/ormconfig';
+import Transaction from '../entities/Transaction.js';
+import { dataSource } from '../../../shared/infra/typeorm/config/datasources/ormconfig.js';
 import { parse } from 'date-fns';
 
 interface Request {

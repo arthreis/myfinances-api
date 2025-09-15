@@ -1,10 +1,10 @@
-import AppError from '../../../shared/errors/AppError';
+import AppError from '../../../shared/errors/AppError.js';
 
-import {TransactionsRepository} from '../repositories/TransactionsRepository';
+import {TransactionsRepository} from '../repositories/TransactionsRepository.js';
 
-import Transaction from '../entities/Transaction';
-import Category from '../../categories/entities/Category';
-import { dataSource } from '../../../shared/infra/typeorm/config/datasources/ormconfig';
+import Transaction from '../entities/Transaction.js';
+import Category from '../../categories/entities/Category.js';
+import { dataSource } from '../../../shared/infra/typeorm/config/datasources/ormconfig.js';
 import { parse } from 'date-fns';
 
 interface Request {
