@@ -7,6 +7,7 @@ import {
   OneToMany,
   ManyToOne,
   JoinColumn,
+  type Relation,
 } from 'typeorm';
 
 import Transaction from '../../transactions/entities/Transaction.js';
@@ -43,7 +44,7 @@ class Category {
 
   @ManyToOne(() => User, user => user.categories)
   @JoinColumn({ name: 'user_id' })
-  user: User;
+  user: Relation<User>;
 
   transactionsCount?: number;
 

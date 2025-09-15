@@ -6,6 +6,7 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
+  type Relation,
 } from 'typeorm';
 import User from '../../users/entities/User.js';
 
@@ -48,14 +49,14 @@ class Transaction {
 
   @ManyToOne(() => Category, category => category.transactions)
   @JoinColumn({ name: 'category_id' })
-  category: Category;
+  category: Relation<Category>;
 
   @Column({ type: 'varchar' })
   user_id: string;
 
   @ManyToOne(() => User, user => user.transactions)
   @JoinColumn({ name: 'user_id' })
-  user: User;
+  user: Relation<User>;
 
   @CreateDateColumn()
   created_at: Date;
