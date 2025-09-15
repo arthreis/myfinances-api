@@ -3,11 +3,8 @@ FROM node:20 AS builder
 
 WORKDIR /usr/src/app
 
-# Copia apenas os arquivos necessários para instalar dependências
 COPY package*.json tsconfig.json ./
-
-# Instala dependências (sem dev para build mais limpo)
-RUN npm install
+RUN npm install --ignore-scripts
 
 # Copia o código-fonte
 COPY ./src ./src
@@ -15,23 +12,21 @@ COPY ./src ./src
 # Compila TypeScript → dist
 RUN npm run build
 
+# ---
+
 # Etapa 2: Runtime
 FROM node:20-alpine
 
 WORKDIR /usr/src/app
 
-# Copia apenas os arquivos de produção
-COPY package*.json ./
-
-# Instala só dependências de produção
-RUN npm install --omit=dev
-
-# Copia o build da etapa anterior o essencial para rodar o app em produção
+# Copia apenas o que é essencial para rodar o app:
+# - package.json para referência e para scripts
+# - node_modules com as dependências instaladas
+# - o build da aplicação em dist
 COPY --from=builder /usr/src/app/package*.json ./
 COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/dist ./dist
 
-# Variáveis default (podem ser sobrescritas no docker-compose)
 ENV NODE_ENV=production
 ENV APP_PORT=3000
 
