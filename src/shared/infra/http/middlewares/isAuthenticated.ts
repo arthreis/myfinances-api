@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction, request } from 'express';
-import { verify } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 
 import AppError from '../../../errors/AppError';
 
@@ -11,7 +11,7 @@ interface TokenPayload {
 
 export default function isAuthenticated(
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction,
 ): void {
   const { authorization } = req.headers;
@@ -21,7 +21,7 @@ export default function isAuthenticated(
   const [, token] = authorization.split(' ');
 
   try {
-    const decoded = verify(token, process.env.AUTH_JWT_SECRET as string);
+    const decoded = jwt.verify(token, process.env.AUTH_JWT_SECRET as string);
 
     const { sub } = decoded as TokenPayload;
 

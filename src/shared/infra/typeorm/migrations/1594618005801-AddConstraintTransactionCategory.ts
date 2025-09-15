@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner, TableForeignKey } from 'typeorm';
+import { type MigrationInterface, type QueryRunner, TableForeignKey } from 'typeorm';
 
 export default class AddConstraintTransactionCategory1594618005801
   implements MigrationInterface {

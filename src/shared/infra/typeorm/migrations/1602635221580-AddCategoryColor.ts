@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
+import { type MigrationInterface, type QueryRunner, TableColumn } from 'typeorm';
 
 export default class AddCategoryColor1602635221580
   implements MigrationInterface {

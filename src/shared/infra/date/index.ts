@@ -3,10 +3,11 @@ import {
   isEqual,
   getTime,
   addDays,
-  subMonths,
   addWeeks,
   startOfWeek,
   endOfDay,
+  lastDayOfMonth,
+  parse,
 } from 'date-fns';
 
 import { utcToZonedTime } from 'date-fns-tz';
@@ -30,8 +31,13 @@ export function generateDateRange(
   const result = [];
 
   while (isBefore(curr, endDate) || isEqual(curr, endDate)) {
-    result.push(getTime(curr));
-    curr = addFn[period](curr, 1);
+    if (period === 'week') {
+      result.push(getTime(curr));
+      curr = addFn[period](curr, 1);
+    } else {
+      result.push(getTime(startFn[period](curr)));
+      curr = addFn[period](curr, 1);
+    }
   }
 
   return result;
@@ -51,14 +57,38 @@ const startFn = {
     return startOfWeek(date, { weekStartsOn: 1 });
   },
   month(date: Date): Date {
-    return startOfWeek(subMonths(date, 1), { weekStartsOn: 1 });
+    return startOfWeek(date, { weekStartsOn: 1 });
   },
 };
 
-export function calculatePeriod(period: 'week' | 'month'): PeriodDate {
-  const baseDate = utcToZonedTime(new Date(), 'America/Sao_Paulo');
-  const endDate = endOfDay(baseDate);
-  const startDate = startFn[period](baseDate);
+export function calculatePeriod(period: 'week' | 'month', date: string): PeriodDate {
+  let baseDate;
+  console.log(`Base date: ${date}`);
+  console.log(`Base date: ${parse(date, 'yyyy-MM', new Date())}`);
+
+  // parse(date, 'yyyy-MM', new Date());
+
+  let endDate;
+  let startDate;
+
+  if (date) {
+    baseDate = utcToZonedTime(new Date(parse(date, 'yyyy-MM', new Date())), 'America/Sao_Paulo');
+    console.log('By month ...');
+    // startDate = startOfDay(new Date(format(baseDate, 'yyyy-MM-01')));
+    // endDate = lastDayOfMonth(endOfDay(baseDate));
+    startDate = parse(date, 'yyyy-MM', new Date()), 'yyyy-MM-01';
+    endDate = lastDayOfMonth(parse(date, 'yyyy-MM', new Date())), 'yyyy-MM-dd';
+  } else {
+    //TODO antigo
+    // baseDate = utcToZonedTime(new Date(parse(date, 'yyyy-MM', new Date())), 'America/Sao_Paulo');
+    // console.log('By week or month [original]...');
+    // endDate = endOfDay(baseDate);
+    // startDate = startFn[period](baseDate);
+
+    baseDate = utcToZonedTime(new Date(parse(date, 'yyyy-MM', new Date())), 'America/Sao_Paulo');
+    endDate = endOfDay(baseDate);
+    startDate = startFn[period](baseDate);
+  }
 
   return {
     startDate,

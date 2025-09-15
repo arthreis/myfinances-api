@@ -1,0 +1,14 @@
+services:
+  db:
+    image: postgres:16
+    container_name: myfinances-db
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    env_file:
+      - ".env.${NODE_ENV}"
+    volumes:
+      - myfinances_db_data:/var/lib/postgresql/data
+
+volumes:
+  myfinances_db_data:

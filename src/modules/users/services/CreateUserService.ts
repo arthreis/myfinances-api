@@ -1,4 +1,4 @@
-import { hash } from 'bcryptjs';
+import { hash } from 'bcrypt';
 
 import User from '../entities/User';
 import AppError from '../../../shared/errors/AppError';

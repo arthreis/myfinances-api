@@ -4,15 +4,16 @@ import { TransactionsRepository } from '../../../../../modules/transactions/repo
 import Category from '../../../../../modules/categories/entities/Category';
 import { dataSource } from '../../../typeorm/config/datasources/ormconfig';
 
-export default class GetTransactionsCountByCategoryController {
+export default class GetTransactionsValueByCategoryController {
   async index(req: Request, res: Response): Promise<Response> {
     const { id: user_id } = req.user;
-    const { period } = req.query;
+    const { period, type } = req.query;
     const categoriesRepository = dataSource.getRepository(Category);
 
-    const transactionsByCategory = await TransactionsRepository.getTransactionCountByCategory(
+    const transactionsByCategory = await TransactionsRepository.getTransactionTotalValueByCategory(
       user_id,
       period as string,
+      type as string,
     );
 
     const categories = await categoriesRepository.find({
@@ -27,7 +28,7 @@ export default class GetTransactionsCountByCategoryController {
       );
 
       if (found) {
-        category.transactionsCount = parseInt(found.transactions, 10);
+        category.transactionsTotalValue = Number(found.transactions);
       }
     });
 

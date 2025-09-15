@@ -1,5 +1,5 @@
 import request from 'supertest';
-import { hash } from 'bcryptjs';
+import { hash } from 'bcrypt';
 import { Connection, getRepository, getConnection } from 'typeorm';
 
 import createConnection from '../shared/infra/typeorm';

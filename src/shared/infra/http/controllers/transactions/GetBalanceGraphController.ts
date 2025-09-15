@@ -6,6 +6,7 @@ import {
   generateDateRange,
   getPeriodUnit,
 } from '../../../date';
+import { format } from 'date-fns';
 
 interface BalanceGraphResponse {
   income: [[number, number]];
@@ -15,11 +16,11 @@ interface BalanceGraphResponse {
 export default class GetBalanceGraphController {
   async index(req: Request, res: Response): Promise<Response> {
     const { id: user_id } = req.user;
-    let { period } = req.query;
+    let { period, date } = req.query;
 
     if (!period) period = 'week';
 
-    const { startDate, endDate } = calculatePeriod(period as 'week' | 'month');
+    const { startDate, endDate } = calculatePeriod(period as 'week' | 'month', date as string);
 
     const entries = await TransactionsRepository.getBalanceGraph(
       user_id,
@@ -39,10 +40,12 @@ export default class GetBalanceGraphController {
       outcome: dateRange.map((date: number) => [date, 0]),
     };
 
+    const gmtBRT = 3600000 * 3;
+
     entries.forEach(entry => {
       const entryType = entry.type as 'income' | 'outcome';
       const foundIndex = result[entryType].findIndex(
-        item => item[0] === entry.point,
+        item => format(Number(item[0]), 'dd/MM/yyyy') === format(Number(entry.point)+Number(gmtBRT), 'dd/MM/yyyy'),
       );
 
       if (foundIndex >= 0) {
