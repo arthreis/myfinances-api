@@ -4,6 +4,7 @@ import jwt, { type SignOptions } from 'jsonwebtoken';
 
 import User from '../entities/User.js';
 import AppError from '../../../shared/errors/AppError.js';
+import { env } from '../../../env/index.js';
 
 interface Request {
   email: string;
@@ -31,8 +32,8 @@ class AuthUserService {
       throw new AppError('Incorrect email/password combination', 401);
     }
 
-    const secret = process.env.AUTH_JWT_SECRET;
-    const expiresIn = process.env.AUTH_JWT_EXPIRES_IN;
+    const secret = env.AUTH_JWT_SECRET;
+    const expiresIn = env.AUTH_JWT_EXPIRES_IN;
 
     const token = jwt.sign({}, secret as string, {
       subject: user.id,
