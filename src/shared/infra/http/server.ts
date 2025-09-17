@@ -1,5 +1,5 @@
-import app from '../../../app.js';
-import { env } from "../../../env/index.js";
+import app from '@/app.js';
+import { env } from "@/env/index.js";
 
 const NUMBER_PORT = env.APP_PORT;
 const ENVIRONMENT = env.NODE_ENV;

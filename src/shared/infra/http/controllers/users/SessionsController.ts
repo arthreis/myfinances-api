@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 
-import AuthUserService from '@modules/users/services/AuthUserService.js';
+import AuthUserService from '@/modules/users/services/AuthUserService.js';
 
 export default class SessionController {
   async store(req: Request, res: Response): Promise<Response> {

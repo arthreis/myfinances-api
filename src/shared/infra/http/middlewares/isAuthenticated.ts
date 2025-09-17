@@ -2,7 +2,7 @@ import { Request, Response, NextFunction, request } from 'express';
 import jwt from 'jsonwebtoken';
 
 import AppError from '../../../errors/AppError.js';
-import { env } from '../../../../env/index.js';
+import { env } from '@/env/index.js';
 
 interface TokenPayload {
   iat: number;

@@ -1,7 +1,7 @@
 import { Router, type Request, type Response } from 'express';
-import packageJson from '../../../../../package.json' with { type: "json" };
+import packageJson from '@/../package.json' with { type: "json" };
 import { dataSource } from "../../typeorm/config/datasources/ormconfig.js";
-
+import { env } from '@/env/index.js';
 const healthRouter = Router();
 
 const appStartTime = Date.now();
@@ -19,7 +19,7 @@ healthRouter.get("/", async (_req: Request, res: Response) => {
     dbStatus = "offline";
   }
 
-  const ENV = process.env.NODE_ENV || "development";
+  const ENV = env.NODE_ENV || "development";
 
   const response: any = {
     status: dbStatus === "ok" ? "ok" : "offline",

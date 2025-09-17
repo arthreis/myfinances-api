@@ -1,10 +1,16 @@
 import { DataSource } from 'typeorm';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
-import { env } from '../../../../../env/index.js'
+import { env } from '@/env/index.js'
+
+import User from '@/modules/users/entities/User.js';
+import Transaction from '@/modules/transactions/entities/Transaction.js';
+import Category from '@/modules/categories/entities/Category.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+const migrationsPath = join(__dirname, '../../migrations/*{.ts,.js}');
 
 export const dataSource = new DataSource({
   migrationsTableName: 'migrations',
@@ -18,6 +24,6 @@ export const dataSource = new DataSource({
   ssl: env.DB_SSL === 'true',
   synchronize: env.DB_SYNCHRONIZE === 'true',
   name: 'default',
-  migrations: [join(__dirname, '../../migrations/*.ts')], // ESM-safe
-  entities: [join(__dirname, '../../../../modules/*/entities/*.ts')], // Ajuste de path relativo
+  migrations: [migrationsPath], // ESM-safe
+  entities: [User, Transaction, Category],
 });

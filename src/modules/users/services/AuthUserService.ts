@@ -4,7 +4,7 @@ import jwt, { type SignOptions } from 'jsonwebtoken';
 
 import User from '../entities/User.js';
 import AppError from '../../../shared/errors/AppError.js';
-import { env } from '../../../env/index.js';
+import { env } from '@/env/index.js';
 
 interface Request {
   email: string;
