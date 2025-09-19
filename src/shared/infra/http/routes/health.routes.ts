@@ -1,7 +1,7 @@
 import { Router, type Request, type Response } from 'express';
-import packageJson from '@/../package.json' with { type: "json" };
-import { dataSource } from "../../typeorm/config/datasources/ormconfig.js";
-import { env } from '@/env/index.js';
+import packageJson from '../../../../../package.json';
+import { dataSource } from "../../typeorm/config/datasources/ormconfig";
+import { env } from '@/env/index';
 const healthRouter = Router();
 
 const appStartTime = Date.now();

@@ -1,15 +1,15 @@
 import request from 'supertest';
 import { hash } from 'bcrypt';
-import { Connection, getRepository, getConnection } from 'typeorm';
+import type { DataSource } from 'typeorm';
 
-import createConnection from '../shared/infra/typeorm';
+import { dataSource } from '../shared/infra/typeorm/config/datasources/ormconfig';
 
-import Transaction from '../modules/transactions/entities/Transaction.js';
-import Category from '../modules/categories/entities/Category.js';
+import Transaction from '../modules/transactions/entities/Transaction';
+import Category from '../modules/categories/entities/Category';
 
 import app from '../app';
 
-let connection: Connection;
+let connection: DataSource;
 let token: string;
 let user: {
   id: string;
@@ -17,7 +17,7 @@ let user: {
 
 describe('Categories', () => {
   beforeAll(async () => {
-    connection = await createConnection('test-connection');
+    connection = await dataSource.initialize();
 
     await connection.query('DROP TABLE IF EXISTS transactions');
     await connection.query('DROP TABLE IF EXISTS categories');
@@ -41,14 +41,11 @@ describe('Categories', () => {
   });
 
   afterAll(async () => {
-    const mainConnection = getConnection();
-
-    await connection.close();
-    await mainConnection.close();
+    await dataSource.destroy();
   });
 
   it('should be able to create a category', async () => {
-    const categoryRepository = getRepository(Category);
+    const categoryRepository = dataSource.getRepository(Category);
 
     const response = await request(app)
       .post('/categories')
@@ -91,9 +88,9 @@ describe('Categories', () => {
   });
 
   it('should be able to update category', async () => {
-    const categoryRepository = getRepository(Category);
+    const categoryRepository = dataSource.getRepository(Category);
 
-    const category = await categoryRepository.findOne();
+    const category = await categoryRepository.findOne({where:{}});
 
     expect(category).toBeTruthy();
 
@@ -115,9 +112,9 @@ describe('Categories', () => {
   });
 
   it('should be able to delete a category', async () => {
-    const categoryRepository = getRepository(Category);
+    const categoryRepository = dataSource.getRepository(Category);
 
-    const category = await categoryRepository.findOne();
+    const category = await categoryRepository.findOne({where:{}});
 
     expect(category).toBeTruthy();
 
@@ -129,15 +126,15 @@ describe('Categories', () => {
 
       expect(response.status).toBe(204);
 
-      const categoryAfterDelete = await categoryRepository.findOne(category.id);
+      const categoryAfterDelete = await categoryRepository.findOne({where: {id: category.id}});
 
       expect(categoryAfterDelete).toBeFalsy();
     }
   });
 
   it('should be able to reject a delete of a category which has transactions', async () => {
-    const transactionRepository = getRepository(Transaction);
-    const categoryRepository = getRepository(Category);
+    const transactionRepository = dataSource.getRepository(Transaction);
+    const categoryRepository = dataSource.getRepository(Category);
 
     const { identifiers } = await categoryRepository.insert({
       user_id: user.id,
@@ -173,7 +170,7 @@ describe('Categories', () => {
   });
 
   it('should be able to delete a category and transactions with confirm', async () => {
-    const categoryRepository = getRepository(Category);
+    const categoryRepository = dataSource.getRepository(Category);
 
     const category = await categoryRepository.findOne({
       where: {

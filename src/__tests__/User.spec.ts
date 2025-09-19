@@ -1,14 +1,14 @@
 import request from 'supertest';
-import { Connection } from 'typeorm';
-import createConnection from '../shared/infra/typeorm';
+import type { DataSource } from 'typeorm';
+import { dataSource } from '../shared/infra/typeorm/config/datasources/ormconfig';
 
 import app from '../app';
 
-let connection: Connection;
+let connection: DataSource;
 
 describe('User', () => {
   beforeAll(async () => {
-    connection = await createConnection('test-connection');
+    connection = await dataSource.initialize();
 
     await connection.query('DROP TABLE IF EXISTS transactions');
     await connection.query('DROP TABLE IF EXISTS categories');

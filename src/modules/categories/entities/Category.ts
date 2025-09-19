@@ -10,8 +10,8 @@ import {
   type Relation,
 } from 'typeorm';
 
-import Transaction from '../../transactions/entities/Transaction.js';
-import User from '../../users/entities/User.js';
+import Transaction from '../../transactions/entities/Transaction';
+import User from '../../users/entities/User';
 
 @Entity('categories')
 class Category {

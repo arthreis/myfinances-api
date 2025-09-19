@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 
-import { TransactionsRepository } from '../../../../../modules/transactions/repositories/TransactionsRepository.js';
+import { TransactionsRepository } from '../../../../../modules/transactions/repositories/TransactionsRepository';
 
 export default class BalanceController {
   async index(req: Request, res: Response): Promise<Response> {

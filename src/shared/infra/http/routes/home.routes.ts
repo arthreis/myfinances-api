@@ -1,5 +1,5 @@
 import { Router, type Request, type Response } from 'express';
-import packageJson from '../../../../../package.json' with { type: "json" };
+import packageJson from '../../../../../package.json';
 const homeRouter = Router();
 
 homeRouter.get('/', (_request: Request, response: Response) => {

@@ -3,11 +3,11 @@ import cors from 'cors';
 import express, { Request, Response, NextFunction } from 'express';
 import 'express-async-errors';
 
-import routes from './shared/infra/http/routes/index.js';
-import AppError from './shared/errors/AppError.js';
-import ConfirmActionError from './shared/errors/ConfirmActionError.js';
+import routes from './shared/infra/http/routes';
+import AppError from './shared/errors/AppError';
+import ConfirmActionError from './shared/errors/ConfirmActionError';
 
-import createConnection from './shared/infra/typeorm/index.js';
+import createConnection from './shared/infra/typeorm';
 createConnection();
 
 const app = express();

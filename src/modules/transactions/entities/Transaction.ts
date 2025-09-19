@@ -8,9 +8,9 @@ import {
   JoinColumn,
   type Relation,
 } from 'typeorm';
-import User from '../../users/entities/User.js';
+import User from '../../users/entities/User';
 
-import Category from '../../categories/entities/Category.js';
+import Category from '../../categories/entities/Category';
 
 export enum TransactionType {
   INCOME = 'income',

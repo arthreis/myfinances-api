@@ -1,10 +1,10 @@
 import * as csvParse from 'csv-parse';
 import fs from 'fs';
 import { In } from 'typeorm';
-import Transaction from '../entities/Transaction.js';
-import { TransactionsRepository } from '../repositories/TransactionsRepository.js';
-import Category from '../../categories/entities/Category.js';
-import { dataSource } from '../../../shared/infra/typeorm/config/datasources/ormconfig.js';
+import Transaction from '../entities/Transaction';
+import { TransactionsRepository } from '../repositories/TransactionsRepository';
+import Category from '../../categories/entities/Category';
+import { dataSource } from '../../../shared/infra/typeorm/config/datasources/ormconfig';
 
 interface Request {
   user_id: string;

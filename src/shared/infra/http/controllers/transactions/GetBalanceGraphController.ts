@@ -1,11 +1,11 @@
 import { Request, Response } from 'express';
 
-import { TransactionsRepository } from '../../../../../modules/transactions/repositories/TransactionsRepository.js';
+import { TransactionsRepository } from '../../../../../modules/transactions/repositories/TransactionsRepository';
 import {
   calculatePeriod,
   generateDateRange,
   getPeriodUnit,
-} from '../../../date/index.js';
+} from '../../../date';
 import { format } from 'date-fns';
 
 interface BalanceGraphResponse {
