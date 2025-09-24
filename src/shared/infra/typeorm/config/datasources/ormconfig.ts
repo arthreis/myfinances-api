@@ -1,12 +1,9 @@
 import { DataSource } from 'typeorm';
 import { join } from 'path';
-import { env } from '@/env'
-
-import User from '@/modules/users/entities/User';
-import Transaction from '@/modules/transactions/entities/Transaction';
-import Category from '@/modules/categories/entities/Category';
+import { env } from '../../../../../env';
 
 const migrationsPath = join(__dirname, '../../migrations/*{.ts,.js}');
+const entitiesPath = join(__dirname, '../../../../../modules/**/entities/*{.ts,.js}');
 
 export const dataSource = new DataSource({
   migrationsTableName: 'migrations',
@@ -21,5 +18,5 @@ export const dataSource = new DataSource({
   synchronize: env.DB_SYNCHRONIZE === 'true',
   name: 'default',
   migrations: [migrationsPath],
-  entities: [User, Transaction, Category],
+  entities: [entitiesPath],
 });

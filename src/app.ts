@@ -1,4 +1,5 @@
 import cors from 'cors';
+import { env } from './env';
 
 import express, { Request, Response, NextFunction } from 'express';
 import 'express-async-errors';
@@ -8,7 +9,16 @@ import AppError from './shared/errors/AppError';
 import ConfirmActionError from './shared/errors/ConfirmActionError';
 
 import createConnection from './shared/infra/typeorm';
-createConnection();
+
+if (env.NODE_ENV !== 'test') {
+  createConnection().then(() => {
+    console.log(`Data Source [${env.NODE_ENV}] inicializado com sucesso!`);
+  }).catch((error) => {
+    console.error('Erro durante a inicialização do Data Source: ', error);
+  });
+} else {
+  console.log('Rodando em ambiente de teste, pulando a inicialização do Data Source.');
+}
 
 const app = express();
 

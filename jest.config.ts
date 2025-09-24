@@ -1,5 +1,4 @@
-import { compilerOptions } from './tsconfig.json';
-import { pathsToModuleNameMapper, type JestConfigWithTsJest } from 'ts-jest';
+import { type JestConfigWithTsJest } from 'ts-jest';
 
 const config: JestConfigWithTsJest = {
   transform: {
@@ -11,18 +10,15 @@ const config: JestConfigWithTsJest = {
       },
     ],
   },
-  moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, { prefix: '<rootDir>/', }),
+  moduleNameMapper: { '^@/(.*)$': `${__dirname}/src/$1`, },
   preset: 'ts-jest',
   testEnvironment: 'node',
   collectCoverage: true,
   coverageDirectory: 'coverage',
   coverageProvider: 'v8',
   testMatch: ['<rootDir>/src/**/*.spec.ts'],
-  globals: {
-    'ts-jest': {
-      tsconfig: 'tsconfig.json',
-    },
-  },
+  globalSetup: '<rootDir>/jest.global-setup.ts',
+  globalTeardown: '<rootDir>/jest.global-teardown.ts',
 };
 
 export default config;
