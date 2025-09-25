@@ -11,7 +11,7 @@ function getEnvFile(nodeEnv?: string): string {
     case 'development':
       return '.env.development';
     default:
-      return '.env';
+      return '.env.example';
   }
 }
 
