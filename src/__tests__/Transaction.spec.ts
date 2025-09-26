@@ -5,9 +5,6 @@ import Transaction from '../modules/transactions/entities/Transaction';
 import app from '../app';
 
 let token: string;
-let user: {
-  id: string;
-};
 let category_id: string;
 
 describe('Transaction', () => {
@@ -38,7 +35,6 @@ describe('Transaction', () => {
       password: 'teste123',
     });
     token = responseLogin.body.token;
-    user = responseLogin.body.user;
 
     const responseCategory = await request(app)
       .post('/categories')
@@ -283,7 +279,6 @@ describe('Transaction', () => {
     expect(balance.income).toBe(8000);
     expect(balance.outcome).toBe(6000);
     expect(balance.total).toBe(2000);
-
   });
 
 });

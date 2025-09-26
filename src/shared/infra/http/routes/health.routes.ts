@@ -1,14 +1,27 @@
 import { Router, type Request, type Response } from 'express';
 import packageJson from '../../../../../package.json';
-import { dataSource } from "../../typeorm/config/datasources/ormconfig";
-import { env } from '@/env/index';
-const healthRouter = Router();
+import { env } from '@/env';
+import { dataSource } from '../../typeorm/config/datasources/ormconfig';
 
+const healthRouter = Router();
 const appStartTime = Date.now();
 
+interface HealthcheckResponse {
+  status: "ok" | "degraded";
+  database: {
+    status: "online" | "offline";
+    responseTimeMs: number | null;
+  };
+  version: string;
+  uptimeSeconds: number;
+  message: string;
+  env?: string;
+}
+
 healthRouter.get("/", async (_req: Request, res: Response) => {
-  let dbStatus = "ok";
+  let dbStatus: 'ok' | 'offline' = "ok";
   let dbResponseTime: number | null = null;
+  const currentTime = Date.now();
 
   try {
     const start = Date.now();
@@ -19,21 +32,20 @@ healthRouter.get("/", async (_req: Request, res: Response) => {
     dbStatus = "offline";
   }
 
-  const ENV = env.NODE_ENV || "development";
-
-  const response: any = {
-    status: dbStatus === "ok" ? "ok" : "offline",
+  const response: HealthcheckResponse = {
+    status: dbStatus === "ok" ? "ok" : "degraded",
     database: {
-      status: dbStatus,
+      status: dbStatus === "ok" ? "online" : "offline",
       responseTimeMs: dbResponseTime,
     },
     version: packageJson.version,
-    uptimeSeconds: Math.floor((Date.now() - appStartTime) / 1000),
-    message: "MyFinances API Healthcheck",
+    message: process.env.HEALTHCHECK_MESSAGE || "MyFinances API Healthcheck",
+    uptimeSeconds: Math.floor((currentTime - appStartTime) / 1000),
   };
 
-  if (ENV !== "production") {
-    response.env = ENV;
+  const _env = env.NODE_ENV;
+  if (_env !== "production") {
+    response.env = _env;
   }
 
   return res.json(response);

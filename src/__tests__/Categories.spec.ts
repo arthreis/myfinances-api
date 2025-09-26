@@ -5,9 +5,6 @@ import Category from '../modules/categories/entities/Category';
 import app from '../app';
 
 let token: string;
-let user: {
-  id: string;
-};
 
 describe('Categories', () => {
   const testDataSource = ormconfigDataSource;
@@ -38,7 +35,6 @@ describe('Categories', () => {
     });
 
     token = loginResponse.body.token;
-    user = loginResponse.body.user;
   });
 
   afterAll(async () => {

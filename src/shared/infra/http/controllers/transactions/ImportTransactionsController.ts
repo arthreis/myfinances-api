@@ -5,7 +5,7 @@ import ImportTransactionsService from '../../../../../modules/transactions/servi
 export default class ImportTransactionsController {
   async store(req: Request, res: Response): Promise<Response> {
     const { id } = req.user;
-    const { path }: any = req.file;
+    const { path } = req.file as { path: string};
 
     const importTransactions = new ImportTransactionsService();
 
