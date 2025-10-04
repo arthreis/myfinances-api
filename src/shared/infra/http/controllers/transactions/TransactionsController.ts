@@ -1,11 +1,11 @@
 import { Request, Response } from 'express';
 
-import {TransactionsRepository} from '@modules/transactions/repositories/TransactionsRepository.js';
-import CreateTransactionService from '@modules/transactions/services/CreateTransactionService.js';
-import DeleteTransactionService from '@modules/transactions/services/DeleteTransactionService.js';
+import {TransactionsRepository} from '@/modules/transactions/repositories/TransactionsRepository';
+import CreateTransactionService from '@/modules/transactions/services/CreateTransactionService';
+import DeleteTransactionService from '@/modules/transactions/services/DeleteTransactionService';
 import { Between } from 'typeorm';
 import { addMonths, subMonths } from 'date-fns';
-import UpdateTransactionService from '@modules/transactions/services/UpdateTransactionService.js';
+import UpdateTransactionService from '@/modules/transactions/services/UpdateTransactionService';
 
 export default class TransactionsController {
   async store(req: Request, res: Response): Promise<Response> {

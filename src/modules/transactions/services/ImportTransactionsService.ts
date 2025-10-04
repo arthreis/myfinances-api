@@ -1,14 +1,21 @@
 import * as csvParse from 'csv-parse';
 import fs from 'fs';
 import { In } from 'typeorm';
-import Transaction from '../entities/Transaction.js';
-import { TransactionsRepository } from '../repositories/TransactionsRepository.js';
-import Category from '../../categories/entities/Category.js';
-import { dataSource } from '../../../shared/infra/typeorm/config/datasources/ormconfig.js';
+import Transaction from '../entities/Transaction';
+import { TransactionsRepository } from '../repositories/TransactionsRepository';
+import Category from '../../categories/entities/Category';
+import { dataSource } from '../../../shared/infra/typeorm/config/datasources/ormconfig';
 
 interface Request {
   user_id: string;
   path: string;
+}
+
+interface ImportData {
+  title: string;
+  type: 'income' | 'outcome';
+  value: number;
+  category_name: string;
 }
 class ImportTransactionsService {
   async execute({ user_id, path }: Request): Promise<Transaction[]> {
@@ -23,7 +30,7 @@ class ImportTransactionsService {
 
     const parseCSV = readCSVStream.pipe(parseStream);
 
-    const lines: any[] = [];
+    const lines: string[] = [];
 
     parseCSV.on('data', line => {
       lines.push(line);
@@ -34,14 +41,15 @@ class ImportTransactionsService {
     });
 
     const categories: string[] = [];
-    const transactions: Partial<Transaction>[] = [];
+    const transactions: ImportData[] = [];
 
     lines.forEach(line => {
       transactions.push({
         title: line[0],
-        type: line[1],
+        type: line[1] as 'income' | 'outcome',
         value: parseFloat(line[2]),
-        category: line[3],
+        category_name: line[3],
+
       });
 
       if (!categories.includes(line[3])) categories.push(line[3]);
@@ -54,11 +62,11 @@ class ImportTransactionsService {
     });
 
     const mapExistentCategories = existentCategories.reduce(
-      (acc: any, curr: Category) => {
+      (acc: Record<string, string>, curr: Category) => {
         acc[curr.title] = curr.id;
         return acc;
       },
-      {},
+      {} as Record<string, string>,
     );
 
     const categoriesToAdd = categories.filter(
@@ -77,13 +85,13 @@ class ImportTransactionsService {
 
     await categoryRepository.save(newCategories);
 
-    const transactionsToCreate = transactions.map((transaction: any) => {
+    const transactionsToCreate = transactions.map((transaction: {title: string; type: 'income'|'outcome';value:number;category_name:string}) => {
       let categoryId = '';
-      if (mapExistentCategories[transaction.category]) {
-        categoryId = mapExistentCategories[transaction.category];
+      if (mapExistentCategories[transaction.category_name]) {
+        categoryId = mapExistentCategories[transaction.category_name];
       } else {
         const found = newCategories.find(
-          category => category.title === transaction.category,
+          category => category.title === transaction.category_name,
         );
         if (found) categoryId = found.id;
       }

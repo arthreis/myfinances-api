@@ -1,9 +1,10 @@
-import { dataSource } from './../../../shared/infra/typeorm/config/datasources/ormconfig.js';
+import { dataSource } from './../../../shared/infra/typeorm/config/datasources/ormconfig';
 import { compare } from 'bcrypt';
 import jwt, { type SignOptions } from 'jsonwebtoken';
 
-import User from '../entities/User.js';
-import AppError from '../../../shared/errors/AppError.js';
+import User from '../entities/User';
+import AppError from '../../../shared/errors/AppError';
+import { env } from '@/env';
 
 interface Request {
   email: string;
@@ -31,8 +32,8 @@ class AuthUserService {
       throw new AppError('Incorrect email/password combination', 401);
     }
 
-    const secret = process.env.AUTH_JWT_SECRET;
-    const expiresIn = process.env.AUTH_JWT_EXPIRES_IN;
+    const secret = env.AUTH_JWT_SECRET;
+    const expiresIn = env.AUTH_JWT_EXPIRES_IN;
 
     const token = jwt.sign({}, secret as string, {
       subject: user.id,

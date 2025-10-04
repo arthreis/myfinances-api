@@ -1,59 +1,106 @@
 import request from 'supertest';
-import path from 'path';
 import { hash } from 'bcrypt';
-import { Connection, getRepository, getConnection } from 'typeorm';
-
-import createConnection from '../shared/infra/typeorm';
-
-import Transaction from '../modules/transactions/entities/Transaction.js';
-import Category from '../modules/categories/entities/Category.js';
-
+import { dataSource as ormconfigDatasource } from '../shared/infra/typeorm/config/datasources/ormconfig';
+import Transaction from '../modules/transactions/entities/Transaction';
 import app from '../app';
 
-let connection: Connection;
 let token: string;
-let user: {
-  id: string;
-};
+let category_id: string;
 
 describe('Transaction', () => {
+  const testDataSource = ormconfigDatasource;
+  console.log(`Iniciando a conexão com o banco de dados [${testDataSource.options.database}] para os testes...`);
+
   beforeAll(async () => {
-    connection = await createConnection('test-connection');
+    if (!testDataSource.isInitialized) {
+      console.log('Conexão do TypeORM não estava inicializada. Inicializando agora...');
+      await testDataSource.initialize();
+    } else {
+      console.log('Conexão do TypeORM já estava inicializada.');
+    }
 
-    await connection.query('DROP TABLE IF EXISTS transactions');
-    await connection.query('DROP TABLE IF EXISTS categories');
-    await connection.query('DROP TABLE IF EXISTS users');
-    await connection.query('DROP TABLE IF EXISTS migrations');
+    await testDataSource.query(`
+      SET session_replication_role = "replica";
+      TRUNCATE TABLE "users", "categories", "transactions" RESTART IDENTITY;
+      SET session_replication_role = "origin";
+    `);
 
-    await connection.runMigrations();
-
-    await connection.query(
+    await testDataSource.query(
       `INSERT INTO users (name, email, password) VALUES ('test', 'teste@teste.com', $1)`,
       [await hash('teste123', 8)],
     );
 
-    const loginResponse = await request(app).post('/sessions').send({
+    const responseLogin = await request(app).post('/sessions').send({
       email: 'teste@teste.com',
       password: 'teste123',
     });
+    token = responseLogin.body.token;
 
-    token = loginResponse.body.token;
-    user = loginResponse.body.user;
+    const responseCategory = await request(app)
+      .post('/categories')
+      .auth(token, { type: 'bearer' })
+      .send({
+        title: 'Food',
+        icon: 'fi/FiShoppingCart',
+        background_color_light: '##9C107B',
+        background_color_dark: '##F38EDC',
+    });
+    category_id = responseCategory.body.id;
+
   });
 
   beforeEach(async () => {
-    await connection.query('DELETE FROM transactions');
-    await connection.query('DELETE FROM categories');
+    await testDataSource.query('TRUNCATE TABLE transactions');
   });
 
   afterAll(async () => {
-    const mainConnection = getConnection();
+    await testDataSource.query(`
+      SET session_replication_role = "replica";
+      TRUNCATE TABLE "users", "categories", "transactions" RESTART IDENTITY;
+      SET session_replication_role = "origin";
+    `);
 
-    await connection.close();
-    await mainConnection.close();
+    if (testDataSource.isInitialized){
+      console.log(`Fechando a conexão do banco de dados após os testes ...`);
+      await testDataSource.destroy();
+    } else {
+      console.log('A conexão do banco de dados já estava fechada.');
+    }
+  });
+
+  it('should be able to create new transaction', async () => {
+    const transactionsRepository = testDataSource.getRepository(Transaction);
+
+    const responseTransaction = await request(app)
+      .post('/transactions')
+      .auth(token, { type: 'bearer' })
+      .send({
+        title: 'March Salary',
+        type: 'income',
+        value: 4000,
+        category_id: category_id,
+        transaction_date: '2025-09-28',
+        description: 'lorem ipsum'
+      });
+
+    const transaction = await transactionsRepository.findOne({
+      where: {
+        title: 'March Salary',
+      },
+    });
+
+    expect(transaction).toBeTruthy();
+
+    expect(responseTransaction.body).toMatchObject(
+      expect.objectContaining({
+        id: expect.any(String),
+      }),
+    );
   });
 
   it('should be able to list transactions', async () => {
+
+    // create the first transaction
     await request(app)
       .post('/transactions')
       .auth(token, { type: 'bearer' })
@@ -61,9 +108,12 @@ describe('Transaction', () => {
         title: 'March Salary',
         type: 'income',
         value: 4000,
-        category: 'Salary',
+        category_id: category_id,
+        transaction_date: '2025-09-28',
+        description: 'lorem ipsum'
       });
 
+    // create the second transaction
     await request(app)
       .post('/transactions')
       .auth(token, { type: 'bearer' })
@@ -71,9 +121,12 @@ describe('Transaction', () => {
         title: 'April Salary',
         type: 'income',
         value: 4000,
-        category: 'Salary',
+        category_id: category_id,
+        transaction_date: '2025-09-28',
+        description: 'lorem ipsum'
       });
 
+    // create the third transaction
     await request(app)
       .post('/transactions')
       .auth(token, { type: 'bearer' })
@@ -81,155 +134,24 @@ describe('Transaction', () => {
         title: 'Macbook',
         type: 'outcome',
         value: 6000,
-        category: 'Eletronics',
+        category_id: category_id,
+        transaction_date: '2025-09-28',
+        description: 'lorem ipsum'
       });
 
+    // list all transactions
     const response = await request(app)
-      .get('/transactions')
-      .auth(token, { type: 'bearer' });
+    .get('/transactions?period=2025-09&page=1&pageSize=20')
+    .auth(token, { type: 'bearer' });
 
+    // check if the response has 3 transactions
     expect(response.body.transactions).toHaveLength(3);
-    expect(response.body.balance).toMatchObject({
-      income: 8000,
-      outcome: 6000,
-      total: 2000,
-    });
-  });
-
-  it('should be able to create new transaction', async () => {
-    const transactionsRepository = getRepository(Transaction);
-
-    const response = await request(app)
-      .post('/transactions')
-      .auth(token, { type: 'bearer' })
-      .send({
-        title: 'March Salary',
-        type: 'income',
-        value: 4000,
-        category: 'Salary',
-      });
-
-    const transaction = await transactionsRepository.findOne({
-      where: {
-        title: 'March Salary',
-      },
-    });
-
-    expect(transaction).toBeTruthy();
-
-    expect(response.body).toMatchObject(
-      expect.objectContaining({
-        id: expect.any(String),
-      }),
-    );
-  });
-
-  it('should create tags when inserting new transactions', async () => {
-    const transactionsRepository = getRepository(Transaction);
-    const categoriesRepository = getRepository(Category);
-
-    const response = await request(app)
-      .post('/transactions')
-      .auth(token, { type: 'bearer' })
-      .send({
-        title: 'March Salary',
-        type: 'income',
-        value: 4000,
-        category: 'Salary',
-      });
-
-    const category = await categoriesRepository.findOne({
-      where: {
-        title: 'Salary',
-      },
-    });
-
-    expect(category).toBeTruthy();
-
-    const transaction = await transactionsRepository.findOne({
-      where: {
-        title: 'March Salary',
-        category_id: category?.id,
-      },
-    });
-
-    expect(transaction).toBeTruthy();
-
-    expect(response.body).toMatchObject(
-      expect.objectContaining({
-        id: expect.any(String),
-      }),
-    );
-  });
-
-  it('should not create tags when they already exists', async () => {
-    const transactionsRepository = getRepository(Transaction);
-    const categoriesRepository = getRepository(Category);
-
-    const { identifiers } = await categoriesRepository.insert({
-      user_id: user.id,
-      title: 'Salary',
-      icon: 'fa/FaAsterisk',
-    });
-
-    const insertedCategoryId = identifiers[0].id;
-
-    await request(app)
-      .post('/transactions')
-      .auth(token, { type: 'bearer' })
-      .send({
-        title: 'March Salary',
-        type: 'income',
-        value: 4000,
-        category: 'Salary',
-      });
-
-    const transaction = await transactionsRepository.findOne({
-      where: {
-        title: 'March Salary',
-        category_id: insertedCategoryId,
-      },
-    });
-
-    const categoriesCount = await categoriesRepository.find();
-
-    expect(categoriesCount).toHaveLength(1);
-    expect(transaction).toBeTruthy();
-  });
-
-  it('should not be able to create outcome transaction without a valid balance', async () => {
-    await request(app)
-      .post('/transactions')
-      .auth(token, { type: 'bearer' })
-      .send({
-        title: 'March Salary',
-        type: 'income',
-        value: 4000,
-        category: 'Salary',
-      });
-
-    const response = await request(app)
-      .post('/transactions')
-      .auth(token, { type: 'bearer' })
-      .send({
-        title: 'iPhone',
-        type: 'outcome',
-        value: 4500,
-        category: 'Eletronics',
-      });
-
-    expect(response.status).toBe(400);
-    expect(response.body).toMatchObject(
-      expect.objectContaining({
-        status: 'error',
-        message: expect.any(String),
-      }),
-    );
   });
 
   it('should be able to delete a transaction', async () => {
-    const transactionsRepository = getRepository(Transaction);
+    const transactionsRepository = testDataSource.getRepository(Transaction);
 
+    // create a transaction
     const response = await request(app)
       .post('/transactions')
       .auth(token, { type: 'bearer' })
@@ -237,60 +159,126 @@ describe('Transaction', () => {
         title: 'March Salary',
         type: 'income',
         value: 4000,
-        category: 'Salary',
+        category_id: category_id,
+        transaction_date: '2025-09-28',
+        description: 'lorem ipsum'
       });
 
+    // delete the transaction
     await request(app)
       .delete(`/transactions/${response.body.id}`)
-      .auth(token, { type: 'bearer' });
+      .auth(token, { type: 'bearer' }).expect(204);
 
-    const transaction = await transactionsRepository.findOne(response.body.id);
+    // find the transaction deleted
+    const transaction = await transactionsRepository.findOne({where: {id: response.body.id}});
 
+    // check if the transaction is deleted
     expect(transaction).toBeFalsy();
   });
 
-  it('should be able to import transactions', async () => {
-    const transactionsRepository = getRepository(Transaction);
-    const categoriesRepository = getRepository(Category);
+  it('should be able to updated a transaction', async () => {
+    const transactionsRepository = testDataSource.getRepository(Transaction);
 
-    const importCSV = path.resolve(__dirname, 'import_template.csv');
-
-    await request(app)
-      .post('/transactions/import')
+    // create a transaction
+    const responseTransaction = await request(app)
+      .post('/transactions')
       .auth(token, { type: 'bearer' })
-      .attach('file', importCSV);
+      .send({
+        title: 'March Salary',
+        type: 'income',
+        value: 4000,
+        category_id: category_id,
+        transaction_date: '2025-09-28',
+        description: 'lorem ipsum'
+      });
 
-    const transactions = await transactionsRepository.find();
-    const categories = await categoriesRepository.find();
+    // update the transaction
+    await request(app)
+    .put(`/transactions/${responseTransaction.body.id}`)
+    .auth(token, { type: 'bearer' })
+    .send({
+      title: 'March Salary Edited',
+      type: 'outcome',
+      value: 4500,
+      category_id: category_id,
+      transaction_date: '2024-09-28',
+      description: 'lorem ipsum edited'
+    });
 
-    expect(categories).toHaveLength(2);
-    expect(categories).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          title: 'Others',
-        }),
-        expect.objectContaining({
-          title: 'Food',
-        }),
-      ]),
-    );
+    const transaction: Transaction | null = await transactionsRepository.findOne({where: {id: responseTransaction.body.id}});
 
-    expect(transactions).toHaveLength(3);
-    expect(transactions).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          title: 'Loan',
-          type: 'income',
-        }),
-        expect.objectContaining({
-          title: 'Website Hosting',
-          type: 'outcome',
-        }),
-        expect.objectContaining({
-          title: 'Ice cream',
-          type: 'outcome',
-        }),
-      ]),
-    );
+    expect(transaction).toBeTruthy();
+    expect(transaction?.title).toBe('March Salary Edited');
+    expect(transaction?.type).toBe('outcome');
+    expect(transaction?.value).toBe(4500);
+    expect(transaction?.transaction_date.toISOString().slice(0,10)).toEqual(new Date('2024-09-28').toISOString().slice(0, 10));
+    expect(transaction?.description).toBe('lorem ipsum edited');
   });
+
+  it('should be able to get transactions balance by period', async () => {
+
+    // create the first transaction
+    await request(app)
+      .post('/transactions')
+      .auth(token, { type: 'bearer' })
+      .send({
+        title: 'March Salary',
+        type: 'income',
+        value: 4000,
+        category_id: category_id,
+        transaction_date: '2025-09-28',
+        description: 'lorem ipsum'
+      });
+
+    // create the second transaction
+    await request(app)
+      .post('/transactions')
+      .auth(token, { type: 'bearer' })
+      .send({
+        title: 'April Salary',
+        type: 'income',
+        value: 4000,
+        category_id: category_id,
+        transaction_date: '2025-09-28',
+        description: 'lorem ipsum'
+      });
+
+    // create the third transaction
+    await request(app)
+      .post('/transactions')
+      .auth(token, { type: 'bearer' })
+      .send({
+        title: 'Macbook',
+        type: 'outcome',
+        value: 6000,
+        category_id: category_id,
+        transaction_date: '2025-09-28',
+        description: 'lorem ipsum'
+      });
+
+    // create the fourth transaction in another month
+    await request(app)
+      .post('/transactions')
+      .auth(token, { type: 'bearer' })
+      .send({
+        title: 'Macbook',
+        type: 'outcome',
+        value: 6000,
+        category_id: category_id,
+        transaction_date: '2025-10-28',
+        description: 'lorem ipsum'
+      });
+
+    const response = await request(app)
+      .get('/transactions/balance?period=2025-09')
+      .auth(token, { type: 'bearer' });
+
+    const balance: { income: number; outcome: number; total: number; } = response.body;
+
+    expect(balance).toBeTruthy();
+    expect(balance.income).toBe(8000);
+    expect(balance.outcome).toBe(6000);
+    expect(balance.total).toBe(2000);
+  });
+
 });

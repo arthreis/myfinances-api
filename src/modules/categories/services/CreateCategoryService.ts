@@ -1,5 +1,5 @@
-import Category from '../entities/Category.js';
-import { dataSource } from '../../../shared/infra/typeorm/config/datasources/ormconfig.js';
+import Category from '../entities/Category';
+import { dataSource } from '../../../shared/infra/typeorm/config/datasources/ormconfig';
 
 interface Request {
   user_id: string;

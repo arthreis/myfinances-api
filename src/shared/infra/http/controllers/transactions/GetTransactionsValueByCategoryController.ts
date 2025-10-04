@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 
-import { TransactionsRepository } from '../../../../../modules/transactions/repositories/TransactionsRepository.js';
-import Category from '../../../../../modules/categories/entities/Category.js';
-import { dataSource } from '../../../typeorm/config/datasources/ormconfig.js';
+import { TransactionsRepository } from '../../../../../modules/transactions/repositories/TransactionsRepository';
+import Category from '../../../../../modules/categories/entities/Category';
+import { dataSource } from '../../../typeorm/config/datasources/ormconfig';
 
 export default class GetTransactionsValueByCategoryController {
   async index(req: Request, res: Response): Promise<Response> {

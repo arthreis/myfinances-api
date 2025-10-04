@@ -1,6 +1,6 @@
-import { TransactionsRepository } from '../repositories/TransactionsRepository.js';
+import { TransactionsRepository } from '../repositories/TransactionsRepository';
 
-import AppError from '../../../shared/errors/AppError.js';
+import AppError from '../../../shared/errors/AppError';
 
 interface Request {
   user_id: string;

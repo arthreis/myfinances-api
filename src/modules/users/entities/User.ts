@@ -6,9 +6,9 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import Category from '../../categories/entities/Category.js';
+import Category from '../../categories/entities/Category';
 
-import Transaction from '../../transactions/entities/Transaction.js';
+import Transaction from '../../transactions/entities/Transaction';
 
 @Entity('users')
 class User {

@@ -1,18 +1,19 @@
 import { Request, Response } from 'express';
 
-import { TransactionsRepository } from '../../../../../modules/transactions/repositories/TransactionsRepository.js';
+import { TransactionsRepository } from '../../../../../modules/transactions/repositories/TransactionsRepository';
 import {
   calculatePeriod,
   generateDateRange,
   getPeriodUnit,
-} from '../../../date/index.js';
+} from '../../../date';
 import { format } from 'date-fns';
 
-interface BalanceGraphResponse {
-  income: [[number, number]];
-  outcome: [[number, number]];
+interface IncomeOutcomeData {
+  income: [number, number][];
+  outcome: [number, number][];
 }
 
+export type TimestampPeriod = number[];
 export default class GetBalanceGraphController {
   async index(req: Request, res: Response): Promise<Response> {
     const { id: user_id } = req.user;
@@ -30,13 +31,13 @@ export default class GetBalanceGraphController {
       getPeriodUnit(period as 'week' | 'month'),
     );
 
-    const dateRange = generateDateRange(
+    const dateRange: TimestampPeriod = generateDateRange(
       startDate,
       endDate,
       period as 'week' | 'month',
     );
 
-    const result: BalanceGraphResponse = {
+      const result: IncomeOutcomeData = {
       income: dateRange.map((date: number) => [date, 0]),
       outcome: dateRange.map((date: number) => [date, 0]),
     };

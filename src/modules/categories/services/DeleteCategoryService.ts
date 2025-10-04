@@ -1,9 +1,9 @@
-import ConfirmActionError from '../../../shared/errors/ConfirmActionError.js';
+import ConfirmActionError from '../../../shared/errors/ConfirmActionError';
 
-import Category from '../entities/Category.js';
-import Transaction from '../../transactions/entities/Transaction.js';
-import AppError from '../../../shared/errors/AppError.js';
-import { dataSource } from '../../../shared/infra/typeorm/config/datasources/ormconfig.js';
+import Category from '../entities/Category';
+import Transaction from '../../transactions/entities/Transaction';
+import AppError from '../../../shared/errors/AppError';
+import { dataSource } from '../../../shared/infra/typeorm/config/datasources/ormconfig';
 
 interface Request {
   user_id: string;

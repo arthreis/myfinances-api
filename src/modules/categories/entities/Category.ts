@@ -7,10 +7,11 @@ import {
   OneToMany,
   ManyToOne,
   JoinColumn,
+  type Relation,
 } from 'typeorm';
 
-import Transaction from '../../transactions/entities/Transaction.js';
-import User from '../../users/entities/User.js';
+import Transaction from '../../transactions/entities/Transaction';
+import User from '../../users/entities/User';
 
 @Entity('categories')
 class Category {
@@ -43,7 +44,7 @@ class Category {
 
   @ManyToOne(() => User, user => user.categories)
   @JoinColumn({ name: 'user_id' })
-  user: User;
+  user: Relation<User>;
 
   transactionsCount?: number;
 

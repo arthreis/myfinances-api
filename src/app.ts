@@ -1,17 +1,24 @@
-import 'reflect-metadata';
-
-import 'dotenv/config';
 import cors from 'cors';
+import { env } from './env';
 
 import express, { Request, Response, NextFunction } from 'express';
 import 'express-async-errors';
 
-import routes from './shared/infra/http/routes/index.js';
-import AppError from './shared/errors/AppError.js';
-import ConfirmActionError from './shared/errors/ConfirmActionError.js';
+import routes from './shared/infra/http/routes';
+import AppError from './shared/errors/AppError';
+import ConfirmActionError from './shared/errors/ConfirmActionError';
 
-import createConnection from './shared/infra/typeorm/index.js';
-createConnection();
+import createConnection from './shared/infra/typeorm';
+
+if (env.NODE_ENV !== 'test') {
+  createConnection().then(() => {
+    console.log(`Data Source [${env.NODE_ENV}] inicializado com sucesso!`);
+  }).catch((error) => {
+    console.error('Erro durante a inicialização do Data Source: ', error);
+  });
+} else {
+  console.log('Rodando em ambiente de teste, pulando a inicialização do Data Source.');
+}
 
 const app = express();
 

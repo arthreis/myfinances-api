@@ -1,5 +1,5 @@
-import Transaction from '../entities/Transaction.js';
-import { dataSource } from '../../../shared/infra/typeorm/config/datasources/ormconfig.js';
+import Transaction from '../entities/Transaction';
+import { dataSource } from '../../../shared/infra/typeorm/config/datasources/ormconfig';
 import { format } from 'date-fns';
 
 interface Balance {
@@ -11,6 +11,12 @@ interface Balance {
 interface TransactionsGroupedByCategory {
   category_id: string;
   transactions: string;
+}
+
+interface GraphEntry {
+  point: string;
+  type: 'income' | 'outcome';
+  value: string;
 }
 
 export const TransactionsRepository = dataSource.getRepository(Transaction).extend(
@@ -126,23 +132,23 @@ export const TransactionsRepository = dataSource.getRepository(Transaction).exte
       startDate: Date,
       endDate: Date,
       unit = 'day',
-    ): Promise<any[]> {
-      const entries = await this.createQueryBuilder('transactions')
+    ): Promise<GraphEntry[]> {
+      const entries: GraphEntry[] = await this.createQueryBuilder('transactions')
         .select(
-          `EXTRACT(EPOCH FROM date_trunc(:unit, transaction_date)) * 1000`,
+          `EXTRACT(EPOCH FROM date_trunc(:unit, transactions.transaction_date)) * 1000`,
           'point',
         )
-        .addSelect('type')
-        .addSelect('SUM(value)', 'value')
-        .where('user_id = :user_id', { user_id })
-        .andWhere('transaction_date BETWEEN :startDate AND :endDate', {
+        .addSelect('transactions.type', 'type')
+        .addSelect('SUM(transactions.value)', 'value')
+        .where('transactions.user_id = :user_id', { user_id })
+        .andWhere('transactions.transaction_date BETWEEN :startDate AND :endDate', {
           startDate: format(startDate, 'yyyy-MM-dd'),
           endDate: format(endDate, 'yyyy-MM-dd'),
         })
         .setParameter('unit', unit)
-        .orderBy('1')
-        .groupBy('1')
-        .addGroupBy('2')
+        .orderBy('point')
+        .groupBy('point')
+        .addGroupBy('transactions.type')
         .getRawMany();
 
       return entries;

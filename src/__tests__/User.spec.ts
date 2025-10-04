@@ -1,26 +1,45 @@
 import request from 'supertest';
-import { Connection } from 'typeorm';
-import createConnection from '../shared/infra/typeorm';
+import { dataSource as ormconfigDatasource } from '../shared/infra/typeorm/config/datasources/ormconfig';
 
 import app from '../app';
 
-let connection: Connection;
-
 describe('User', () => {
+  const testDataSource = ormconfigDatasource;
+  console.log(`Iniciando a conexão com o banco de dados [${testDataSource.options.database}] para os testes...`);
+
   beforeAll(async () => {
-    connection = await createConnection('test-connection');
+    if (!testDataSource.isInitialized) {
+      console.log('Conexão do TypeORM não estava inicializada. Inicializando agora...');
+      await testDataSource.initialize();
+    } else {
+      console.log('Conexão do TypeORM já estava inicializada.');
+    }
 
-    await connection.query('DROP TABLE IF EXISTS transactions');
-    await connection.query('DROP TABLE IF EXISTS categories');
-    await connection.query('DROP TABLE IF EXISTS users');
-    await connection.query('DROP TABLE IF EXISTS migrations');
+    await testDataSource.query(`
+      SET session_replication_role = "replica";
+      TRUNCATE TABLE "users", "categories", "transactions" RESTART IDENTITY;
+      SET session_replication_role = "origin";
+    `);
+  });
 
-    await connection.runMigrations();
+  afterAll(async () => {
+    await testDataSource.query(`
+      SET session_replication_role = "replica";
+      TRUNCATE TABLE "users", "categories", "transactions" RESTART IDENTITY;
+      SET session_replication_role = "origin";
+    `);
+
+    if (testDataSource.isInitialized){
+      console.log(`Fechando a conexão do banco de dados após os testes ...`);
+      await testDataSource.destroy();
+    } else {
+      console.log('A conexão do banco de dados já estava fechada.');
+    }
   });
 
   it('should be able to reject wrong login request', async () => {
     const response = await request(app).post('/sessions').send({
-      email: 'vitor.medeiro10@gmail.com',
+      email: 'john@doe.com',
       password: 'teste123',
     });
 
@@ -29,21 +48,21 @@ describe('User', () => {
 
   it('should be able to perform register', async () => {
     const response = await request(app).post('/users').send({
-      name: 'Vitor Medeiro',
-      email: 'vitor.medeiro10@gmail.com',
+      name: 'John Doe',
+      email: 'john@doe.com',
       password: 'teste123',
     });
 
     expect(response.body).toMatchObject(
       expect.objectContaining({
-        name: 'Vitor Medeiro',
+        name: 'John Doe',
       }),
     );
   });
 
   it('should be able to perform login request', async () => {
     const response = await request(app).post('/sessions').send({
-      email: 'vitor.medeiro10@gmail.com',
+      email: 'john@doe.com',
       password: 'teste123',
     });
 
@@ -56,8 +75,8 @@ describe('User', () => {
 
   it('should be able to reject an duplicated email register request', async () => {
     const response = await request(app).post('/users').send({
-      name: 'Vitor Medeiro',
-      email: 'vitor.medeiro10@gmail.com',
+      name: 'John Doe',
+      email: 'john@doe.com',
       password: 'teste123',
     });
 

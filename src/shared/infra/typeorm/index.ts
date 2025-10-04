@@ -1,4 +1,4 @@
-import { dataSource } from './config/datasources/ormconfig.js';
+import { dataSource } from './config/datasources/ormconfig';
 
 import { type DataSource } from 'typeorm';
 

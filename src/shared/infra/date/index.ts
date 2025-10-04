@@ -11,6 +11,7 @@ import {
 } from 'date-fns';
 
 import { utcToZonedTime } from 'date-fns-tz';
+import type { TimestampPeriod } from '../http/controllers/transactions/GetBalanceGraphController';
 
 const periodUnitsDict = {
   month: 'week',
@@ -26,7 +27,7 @@ export function generateDateRange(
   startDate: Date,
   endDate: Date,
   period: 'week' | 'month',
-): any {
+): TimestampPeriod {
   let curr = startDate;
   const result = [];
 
@@ -62,26 +63,37 @@ const startFn = {
 };
 
 export function calculatePeriod(period: 'week' | 'month', date: string): PeriodDate {
-  let baseDate;
-  console.log(`Base date: ${date}`);
-  console.log(`Base date: ${parse(date, 'yyyy-MM', new Date())}`);
+  console.log(`Input date string for period calculation: ${date}`);
+  const parsedDate = parseDate(date);
+  const baseDate = convertToTimeZone(parsedDate, 'America/Sao_Paulo');
 
-  let endDate;
-  let startDate;
-
-  if (date) {
-    baseDate = utcToZonedTime(new Date(parse(date, 'yyyy-MM', new Date())), 'America/Sao_Paulo');
-    console.log('By month ...');
-    startDate = parse(date, 'yyyy-MM', new Date()), 'yyyy-MM-01';
-    endDate = lastDayOfMonth(parse(date, 'yyyy-MM', new Date())), 'yyyy-MM-dd';
+  if (period === 'month') {
+    return calculateMonthPeriod(date, parsedDate);
   } else {
-    baseDate = utcToZonedTime(new Date(parse(date, 'yyyy-MM', new Date())), 'America/Sao_Paulo');
-    endDate = endOfDay(baseDate);
-    startDate = startFn[period](baseDate);
+    return calculateWeekPeriod(baseDate, period);
   }
+}
 
-  return {
-    startDate,
-    endDate,
-  };
+function parseDate(date: string): Date {
+  const parsedDate = parse(date, 'yyyy-MM', new Date());
+  if (!/^\d{4}-\d{2}$/.test(date) || isNaN(parsedDate.getTime())) {
+    throw new Error(`Invalid date format: ${date}. Expected format: 'yyyy-MM'.`);
+  }
+  return parsedDate;
+}
+
+function convertToTimeZone(date: Date, timeZone: string): Date {
+  return utcToZonedTime(date, timeZone);
+}
+
+function calculateMonthPeriod(date: string, parsedDate: Date): PeriodDate {
+  const startDate = parse(`${date}-01`, 'yyyy-MM-dd', new Date());
+  const endDate = lastDayOfMonth(parsedDate);
+  return { startDate, endDate };
+}
+
+function calculateWeekPeriod(baseDate: Date, period: 'week' | 'month'): PeriodDate {
+  const startDate = startFn[period](baseDate);
+  const endDate = endOfDay(baseDate);
+  return { startDate, endDate };
 }

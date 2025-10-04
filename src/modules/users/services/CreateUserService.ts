@@ -1,8 +1,8 @@
 import { hash } from 'bcrypt';
 
-import User from '../entities/User.js';
-import AppError from '../../../shared/errors/AppError.js';
-import { dataSource } from '../../../shared/infra/typeorm/config/datasources/ormconfig.js';
+import User from '../entities/User';
+import AppError from '../../../shared/errors/AppError';
+import { dataSource } from '../../../shared/infra/typeorm/config/datasources/ormconfig';
 
 interface Request {
   name: string;

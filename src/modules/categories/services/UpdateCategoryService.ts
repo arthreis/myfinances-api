@@ -1,7 +1,7 @@
-import AppError from '../../../shared/errors/AppError.js';
-import { dataSource } from '../../../shared/infra/typeorm/config/datasources/ormconfig.js';
+import AppError from '../../../shared/errors/AppError';
+import { dataSource } from '../../../shared/infra/typeorm/config/datasources/ormconfig';
 
-import Category from '../entities/Category.js';
+import Category from '../entities/Category';
 
 interface Request {
   user_id: string;
