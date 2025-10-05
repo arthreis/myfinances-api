@@ -6,6 +6,7 @@ import usersRouter from './users.routes';
 import categoriesRouter from './categories.routes';
 import homeRouter from './home.routes';
 import healthRouter from './health.routes';
+import metricsRouter from './metrics.routes';
 
 const routes = Router();
 
@@ -15,5 +16,6 @@ routes.use('/transactions', transactionsRouter);
 routes.use('/users', usersRouter);
 routes.use('/sessions', sessionsRouter);
 routes.use('/categories', categoriesRouter);
+routes.use('/metrics', metricsRouter)
 
 export default routes;

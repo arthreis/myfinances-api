@@ -9,6 +9,7 @@ import AppError from './shared/errors/AppError';
 import ConfirmActionError from './shared/errors/ConfirmActionError';
 
 import createConnection from './shared/infra/typeorm';
+import { metricsMiddleware } from './shared/infra/http/middlewares/metricsMiddleware';
 
 if (env.NODE_ENV !== 'test') {
   createConnection().then(() => {
@@ -24,6 +25,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(metricsMiddleware);
 app.use(routes);
 
 app.use((err: Error, _request: Request, response: Response, _: NextFunction) => {
