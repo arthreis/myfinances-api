@@ -4,7 +4,7 @@ import {TransactionsRepository} from '@/modules/transactions/repositories/Transa
 import CreateTransactionService from '@/modules/transactions/services/CreateTransactionService';
 import DeleteTransactionService from '@/modules/transactions/services/DeleteTransactionService';
 import { Between } from 'typeorm';
-import { addMonths, subMonths } from 'date-fns';
+import { isValid, lastDayOfMonth, parseISO, endOfDay } from 'date-fns';
 import UpdateTransactionService from '@/modules/transactions/services/UpdateTransactionService';
 
 export default class TransactionsController {
@@ -31,33 +31,37 @@ export default class TransactionsController {
     const { id } = req.user;
     const { sort, direction, page, pageSize, period } = req.query;
 
-    let take = 6;
-    let skip = 0;
-    let order: object = {
-      transaction_date: 'DESC',
-    };
+    if (!period || typeof period !== 'string' || period.length !== 7 || !/^\d{4}-\d{2}$/.test(period)) {
+      return res.status(400).json({
+        message: 'O parâmetro "period" é obrigatório e deve estar no formato "yyyy-MM".'
+      });
+    }
 
+    const firstDay = parseISO(period);
+
+    if(!isValid(firstDay)) {
+      return res.status(400).json({
+        message: 'O parâmetro "period" está em um formato inválido.'
+      })
+    }
+
+    const pageNumber = parseInt(page as string, 10) || 1;
+    const size = parseInt(pageSize as string, 10) || 6;
+
+    const take = size;
+    const skip = take * (pageNumber - 1);
+
+    let order: object = { transaction_date: 'DESC' };
     if (sort && direction) {
-      order = {
-        [sort as string]: direction,
-      };
+      order = { [sort as string]: direction };
     }
 
-    if (page && pageSize) {
-      take = parseInt(pageSize as string, 10);
-      skip = take * (parseInt(page as string, 10) - 1);
+    const endOfLastDay = endOfDay(lastDayOfMonth(firstDay));
 
-      if (skip < 0) skip = 0;
-    }
-
-    console.log(`PERIOD: ${period}`);
-    const date = addMonths(new Date(period as string), 1);
-
-    console.log(`PERIOD-DATE: ${date}`);
-
+    console.log(`Buscando transações entre ${firstDay} e ${endOfLastDay}`);
 
     const [transactions, total] = await TransactionsRepository.findAndCount({
-      where: { user_id: id, transaction_date: Between(subMonths(date, 1), date) },
+      where: { user_id: id, transaction_date: Between(firstDay, endOfLastDay) },
       relations: ['category'],
       order,
       take,
