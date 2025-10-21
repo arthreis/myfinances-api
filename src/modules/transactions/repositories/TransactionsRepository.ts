@@ -131,11 +131,11 @@ export const TransactionsRepository = dataSource.getRepository(Transaction).exte
       user_id: string,
       startDate: Date,
       endDate: Date,
-      unit = 'day',
+      unit: 'day' | 'week',
     ): Promise<GraphEntry[]> {
       const entries: GraphEntry[] = await this.createQueryBuilder('transactions')
         .select(
-          `EXTRACT(EPOCH FROM date_trunc(:unit, transactions.transaction_date)) * 1000`,
+          `EXTRACT(EPOCH FROM (date_trunc(:unit, transactions.transaction_date + INTERVAL '1 day') - INTERVAL '1 day' )) * 1000`,
           'point',
         )
         .addSelect('transactions.type', 'type')

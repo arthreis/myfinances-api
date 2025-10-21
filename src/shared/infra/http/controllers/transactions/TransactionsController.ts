@@ -1,10 +1,11 @@
 import { Request, Response } from 'express';
+import { Between } from 'typeorm';
+import { isValid, lastDayOfMonth, endOfDay } from 'date-fns';
 
+import { isValidFormatYYYYMM, parseYYYYMMtoDate } from '@/shared/infra/date';
 import {TransactionsRepository} from '@/modules/transactions/repositories/TransactionsRepository';
 import CreateTransactionService from '@/modules/transactions/services/CreateTransactionService';
 import DeleteTransactionService from '@/modules/transactions/services/DeleteTransactionService';
-import { Between } from 'typeorm';
-import { isValid, lastDayOfMonth, parseISO, endOfDay } from 'date-fns';
 import UpdateTransactionService from '@/modules/transactions/services/UpdateTransactionService';
 
 export default class TransactionsController {
@@ -31,13 +32,13 @@ export default class TransactionsController {
     const { id } = req.user;
     const { sort, direction, page, pageSize, period } = req.query;
 
-    if (!period || typeof period !== 'string' || period.length !== 7 || !/^\d{4}-\d{2}$/.test(period)) {
+    if (!isValidFormatYYYYMM(period as string)) {
       return res.status(400).json({
         message: 'O parâmetro "period" é obrigatório e deve estar no formato "yyyy-MM".'
       });
     }
 
-    const firstDay = parseISO(period);
+    const firstDay = parseYYYYMMtoDate(period as string);
 
     if(!isValid(firstDay)) {
       return res.status(400).json({
@@ -57,8 +58,6 @@ export default class TransactionsController {
     }
 
     const endOfLastDay = endOfDay(lastDayOfMonth(firstDay));
-
-    console.log(`Buscando transações entre ${firstDay} e ${endOfLastDay}`);
 
     const [transactions, total] = await TransactionsRepository.findAndCount({
       where: { user_id: id, transaction_date: Between(firstDay, endOfLastDay) },

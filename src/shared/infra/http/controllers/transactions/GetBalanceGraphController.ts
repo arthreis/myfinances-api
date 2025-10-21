@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { format } from 'date-fns';
 
 import { TransactionsRepository } from '../../../../../modules/transactions/repositories/TransactionsRepository';
 import {
@@ -6,7 +7,6 @@ import {
   generateDateRange,
   getPeriodUnit,
 } from '../../../date';
-import { format } from 'date-fns';
 
 interface IncomeOutcomeData {
   income: [number, number][];
@@ -14,51 +14,58 @@ interface IncomeOutcomeData {
 }
 
 export type TimestampPeriod = number[];
+
+export type Period = 'week' | 'month';
+
 export default class GetBalanceGraphController {
   async index(req: Request, res: Response): Promise<Response> {
+
     const { id: user_id } = req.user;
-    let { period } = req.query;
+    const { period } = req.query;
     const { date } = req.query;
 
-    if (!period) period = 'week';
+    const { startDate, endDate } = calculatePeriod(date as string);
 
-    const { startDate, endDate } = calculatePeriod(period as 'week' | 'month', date as string);
-
-    const entries = await TransactionsRepository.getBalanceGraph(
+    const accumulatedTransactions = await TransactionsRepository.getBalanceGraph(
       user_id,
       startDate,
       endDate,
-      getPeriodUnit(period as 'week' | 'month'),
+      getPeriodUnit(period as Period),
     );
 
-    const dateRange: TimestampPeriod = generateDateRange(
+    const chartTimestamps: TimestampPeriod = generateDateRange(
       startDate,
       endDate,
-      period as 'week' | 'month',
+      period as Period,
     );
 
-      const result: IncomeOutcomeData = {
-      income: dateRange.map((date: number) => [date, 0]),
-      outcome: dateRange.map((date: number) => [date, 0]),
+    const chartDataByType: IncomeOutcomeData = {
+      income: chartTimestamps.map((date: number) => [date, 0]),
+      outcome: chartTimestamps.map((date: number) => [date, 0]),
     };
 
-    const gmtBRT = 3600000 * 3;
+    accumulatedTransactions.forEach(transaction => {
+      const transactionType = transaction.type as 'income' | 'outcome';
+      const transactionDateIndex = chartDataByType[transactionType].findIndex(
+        item => {
+          // checks if the graph point data has an associated transaction date
+          const chartDisplayDate = format(Number(item[0]), 'dd/MM/yyyy');
+          const transactionPointDate = format(Number(transaction.point), 'dd/MM/yyyy');
 
-    entries.forEach(entry => {
-      const entryType = entry.type as 'income' | 'outcome';
-      const foundIndex = result[entryType].findIndex(
-        item => format(Number(item[0]), 'dd/MM/yyyy') === format(Number(entry.point)+Number(gmtBRT), 'dd/MM/yyyy'),
+          return chartDisplayDate === transactionPointDate;
+        }
       );
 
-      if (foundIndex >= 0) {
-        const [oldPoint, oldValue] = result[entryType][foundIndex];
-        result[entryType][foundIndex] = [
+      const hasTransactionOnChartDate = transactionDateIndex >= 0;
+
+      if (hasTransactionOnChartDate) {
+        const [oldPoint, oldValue] = chartDataByType[transactionType][transactionDateIndex];
+        chartDataByType[transactionType][transactionDateIndex] = [
           oldPoint,
-          oldValue + parseFloat(entry.value),
+          oldValue + parseFloat(transaction.value),
         ];
       }
     });
-
-    return res.json(result);
+    return res.json(chartDataByType);
   }
 }

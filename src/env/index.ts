@@ -40,6 +40,7 @@ const envSchema = z.object({
   DB_LOG: z.string().nonempty(),
   DB_SSL: z.string().nonempty(),
   DB_SYNCHRONIZE: z.string().nonempty(),
+  TZ: z.string().nonempty(),
 })
 
 const _env = envSchema.safeParse(process.env)
