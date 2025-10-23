@@ -6,6 +6,10 @@ import {
   calculatePeriod,
   generateDateRange,
   getPeriodUnit,
+  getWeekValue,
+  WeekStartsDict,
+  type Period,
+  type WeekStartKey,
 } from '../../../date';
 
 interface IncomeOutcomeData {
@@ -15,14 +19,33 @@ interface IncomeOutcomeData {
 
 export type TimestampPeriod = number[];
 
-export type Period = 'week' | 'month';
-
 export default class GetBalanceGraphController {
   async index(req: Request, res: Response): Promise<Response> {
 
     const { id: user_id } = req.user;
     const { period } = req.query;
     const { date } = req.query;
+    let { weekStartsOn } = req.query;
+
+    if (!period || (period !== 'week' && period !== 'month')) {
+      return res.status(400).json({
+        message: `O parâmetro "period" é obrigatório e deve ser "week" ou "month". [${period}]`,
+      });
+    }
+
+    if (!date) {
+      return res.status(400).json({
+        message: `O parâmetro "date" é obrigatório e deve estar no formato "yyyy-MM". [${date}]`,
+      });
+    }
+
+    weekStartsOn = weekStartsOn as WeekStartKey || 'sunday';
+
+    if (weekStartsOn && weekStartsOn in WeekStartsDict === false) {
+      return res.status(400).json({
+        message: `O parâmetro "weekStartsOn" deve ser "sunday", "monday", "tuesday", "wednesday", "thursday", "friday" ou "saturday". [${weekStartsOn}]`,
+      });
+    }
 
     const { startDate, endDate } = calculatePeriod(date as string);
 
@@ -31,12 +54,14 @@ export default class GetBalanceGraphController {
       startDate,
       endDate,
       getPeriodUnit(period as Period),
+      getWeekValue(weekStartsOn as WeekStartKey),
     );
 
     const chartTimestamps: TimestampPeriod = generateDateRange(
       startDate,
       endDate,
       period as Period,
+      getWeekValue(weekStartsOn as WeekStartKey),
     );
 
     const chartDataByType: IncomeOutcomeData = {

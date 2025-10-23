@@ -25,7 +25,8 @@ const addFn = {
 export function generateDateRange(
   startDate: Date,
   endDate: Date,
-  period: 'week' | 'month',
+  period: Period,
+  weekStartsOn: WeekStartValue,
 ): TimestampPeriod {
   let currentDate = startDate;
   const result = [];
@@ -35,15 +36,17 @@ export function generateDateRange(
     if (period === 'week') {
       result.push(getTime(currentDate));
       currentDate = addFn[period](currentDate, 1);
-    } else {
-      result.push(getTime(startOfWeek(currentDate, { weekStartsOn: 0 })));
+    } else if (period === 'month'){
+      result.push(getTime(startOfWeek(currentDate, { weekStartsOn: weekStartsOn })));
       currentDate = addFn[period](currentDate, 1);
+    } else {
+      throw new Error(`Parâmetro Period inválido! ${period}`)
     }
   }
   return result;
 }
 
-export function getPeriodUnit(period: 'week' | 'month'): 'day' | 'week' {
+export function getPeriodUnit(period: Period): 'day' | 'week' {
   return periodUnitsDict[period];
 }
 
@@ -77,3 +80,22 @@ export function isValidFormatYYYYMM(yyyyMM: string): boolean {
     return true
   }
 }
+
+export const WeekStartsDict = {
+  sunday: 0,
+  monday: 1,
+  tuesday: 2,
+  wednesday: 3,
+  thursday: 4,
+  friday: 5,
+  saturday: 6,
+} as const;
+
+export type WeekStartKey = keyof typeof WeekStartsDict;
+export type WeekStartValue = typeof WeekStartsDict[keyof typeof WeekStartsDict];
+
+export function getWeekValue(day: WeekStartKey) {
+  return WeekStartsDict[day];
+}
+
+export type Period = 'week' | 'month';
