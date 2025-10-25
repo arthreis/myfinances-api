@@ -12,15 +12,10 @@ import {
 
 import type { TimestampPeriod } from '../http/controllers/transactions/GetBalanceGraphController';
 
-const periodUnitsDict = {
-  month: 'week',
-  week: 'day',
-} as const;
-
 const addFn = {
-  week: addDays,
-  month: addWeeks,
-};
+  day: addDays,
+  week: addWeeks,
+} as const;
 
 export function generateDateRange(
   startDate: Date,
@@ -33,21 +28,17 @@ export function generateDateRange(
 
   while (isBefore(currentDate, endDate) || isEqual(currentDate, endDate)) {
 
-    if (period === 'week') {
+    if (period === 'day') {
       result.push(getTime(currentDate));
       currentDate = addFn[period](currentDate, 1);
-    } else if (period === 'month'){
+    } else if (period === 'week'){
       result.push(getTime(startOfWeek(currentDate, { weekStartsOn: weekStartsOn })));
       currentDate = addFn[period](currentDate, 1);
     } else {
-      throw new Error(`Parâmetro Period inválido! ${period}`)
+      throw new Error(`Invalid value to param "period": ${period} . Expected: 'day' or 'week'.`)
     }
   }
   return result;
-}
-
-export function getPeriodUnit(period: Period): 'day' | 'week' {
-  return periodUnitsDict[period];
 }
 
 interface PeriodDate {
@@ -56,7 +47,9 @@ interface PeriodDate {
 }
 
 export function calculatePeriod(date: string): PeriodDate {
-  return calculateMonthPeriod(date);
+  const startDate = parseISO(date);
+  const endDate = endOfDay(lastDayOfMonth(startDate));
+  return { startDate, endDate };
 }
 
 export function parseYYYYMMtoDate(date: string): Date {
@@ -65,12 +58,6 @@ export function parseYYYYMMtoDate(date: string): Date {
     throw new Error(`Invalid date format: ${date}. Expected format: 'yyyy-MM'.`);
   }
   return parsedDate;
-}
-
-function calculateMonthPeriod(date: string): PeriodDate {
-  const startDate = parseISO(date);
-  const endDate = endOfDay(lastDayOfMonth(startDate));
-  return { startDate, endDate };
 }
 
 export function isValidFormatYYYYMM(yyyyMM: string): boolean {
@@ -98,4 +85,4 @@ export function getWeekValue(day: WeekStartKey) {
   return WeekStartsDict[day];
 }
 
-export type Period = 'week' | 'month';
+export type Period = 'week' | 'day';

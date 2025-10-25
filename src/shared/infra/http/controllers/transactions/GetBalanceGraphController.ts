@@ -5,7 +5,6 @@ import { TransactionsRepository } from '../../../../../modules/transactions/repo
 import {
   calculatePeriod,
   generateDateRange,
-  getPeriodUnit,
   getWeekValue,
   WeekStartsDict,
   type Period,
@@ -27,7 +26,7 @@ export default class GetBalanceGraphController {
     const { date } = req.query;
     let { weekStartsOn } = req.query;
 
-    if (!period || (period !== 'week' && period !== 'month')) {
+    if (!period || (period !== 'week' && period !== 'day')) {
       return res.status(400).json({
         message: `O parâmetro "period" é obrigatório e deve ser "week" ou "month". [${period}]`,
       });
@@ -53,7 +52,7 @@ export default class GetBalanceGraphController {
       user_id,
       startDate,
       endDate,
-      getPeriodUnit(period as Period),
+      period as Period,
       getWeekValue(weekStartsOn as WeekStartKey),
     );
 
