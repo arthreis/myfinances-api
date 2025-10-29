@@ -8,8 +8,7 @@ interface Request {
   category_id: string;
   title: string;
   icon: string;
-  background_color_light: string;
-  background_color_dark: string;
+  color: string;
 }
 
 class UpdateCategoryService {
@@ -18,8 +17,7 @@ class UpdateCategoryService {
     category_id,
     title,
     icon,
-    background_color_light,
-    background_color_dark,
+    color,
   }: Request): Promise<Category> {
     const categoryRepository = dataSource.getRepository(Category);
 
@@ -36,8 +34,7 @@ class UpdateCategoryService {
       ...category,
       title,
       icon,
-      background_color_light,
-      background_color_dark,
+      color,
     };
 
     await categoryRepository.save(category);

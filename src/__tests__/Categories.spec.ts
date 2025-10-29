@@ -61,8 +61,7 @@ describe('Categories', () => {
       .send({
         title: 'Food',
         icon: 'fi/FiShoppingCart',
-        background_color_light: '##9C107B',
-        background_color_dark: '##F38EDC',
+        color: '##9C107B',
       });
 
     const category = await categoryRepository.findOne({
@@ -128,8 +127,7 @@ describe('Categories', () => {
       .send({
         title: 'iFood',
         icon: 'fi/FiShoppingCart',
-        background_color_light: '#222',
-        background_color_dark: '#eee',
+        color: '#222',
       }).expect(200);
 
     const category = await categoryRepository.findOne({where: {id: responseCategory.body.id}});

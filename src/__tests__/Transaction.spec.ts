@@ -42,8 +42,7 @@ describe('Transaction', () => {
       .send({
         title: 'Food',
         icon: 'fi/FiShoppingCart',
-        background_color_light: '##9C107B',
-        background_color_dark: '##F38EDC',
+        color: '##F38EDC',
     });
     category_id = responseCategory.body.id;
 
