@@ -25,10 +25,7 @@ class Category {
   icon: string;
 
   @Column({ type: 'varchar' })
-  background_color_light: string;
-
-  @Column({ type: 'varchar' })
-  background_color_dark: string;
+  color: string;
 
   @CreateDateColumn()
   created_at: Date;

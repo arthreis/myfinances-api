@@ -1,20 +1,32 @@
-import cors from 'cors';
-import { env } from './env';
-
-import express, { Request, Response, NextFunction } from 'express';
 import 'express-async-errors';
+import express, { Request, Response, NextFunction } from 'express';
+import cors from 'cors';
 
-import routes from './shared/infra/http/routes';
+import { env } from './env';
 import AppError from './shared/errors/AppError';
 import ConfirmActionError from './shared/errors/ConfirmActionError';
-
+import routes from './shared/infra/http/routes';
 import createConnection from './shared/infra/typeorm';
 import { metricsMiddleware } from './shared/infra/http/middlewares/metricsMiddleware';
 
 if (env.NODE_ENV !== 'test') {
-  createConnection().then(() => {
-    console.log(`Data Source [${env.NODE_ENV}] inicializado com sucesso!`);
-  }).catch((error) => {
+  createConnection()
+    .then(async (dataSource) => {
+      console.log(`✅ Data Source [${env.NODE_ENV}] inicializado com sucesso!`);
+
+      try {
+        const [{ timezone, now }] = await dataSource.query(`
+          SELECT current_setting('TIMEZONE') AS timezone, now() AS now;
+        `);
+
+        console.log('🕒 PostgreSQL timezone:', timezone);
+        console.log('🕒 PostgreSQL now():', now);
+        console.log('🕒 Node.js timezone:', Intl.DateTimeFormat().resolvedOptions().timeZone);
+        console.log('🕒 Node.js now():', new Date().toISOString());
+      } catch (err) {
+        console.error('⚠️ Erro ao consultar timezone no banco: ', err);
+      }
+    }).catch((error) => {
     console.error('Erro durante a inicialização do Data Source: ', error);
   });
 } else {

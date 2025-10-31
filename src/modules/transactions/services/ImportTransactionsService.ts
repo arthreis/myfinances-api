@@ -78,8 +78,7 @@ class ImportTransactionsService {
         user_id,
         title: category,
         icon: 'fa/FaAsterisk',
-        background_color_light: '#363f5f',
-        background_color_dark: '#9A9A9A',
+        color: '#363f5f',
       })),
     );
 

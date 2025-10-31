@@ -48,8 +48,7 @@ export default class CategoriesController {
     const {
       title,
       icon,
-      background_color_light,
-      background_color_dark,
+      color,
     } = req.body;
 
     const createCategoryService = new CreateCategoryService();
@@ -58,8 +57,7 @@ export default class CategoriesController {
       user_id,
       title,
       icon,
-      background_color_light,
-      background_color_dark,
+      color,
     });
 
     return res.json(category);
@@ -71,8 +69,7 @@ export default class CategoriesController {
     const {
       title,
       icon,
-      background_color_light,
-      background_color_dark,
+      color,
     } = req.body;
 
     const updateCategoryService = new UpdateCategoryService();
@@ -82,8 +79,7 @@ export default class CategoriesController {
       category_id,
       title,
       icon,
-      background_color_light,
-      background_color_dark,
+      color,
     });
 
     return res.json(category);

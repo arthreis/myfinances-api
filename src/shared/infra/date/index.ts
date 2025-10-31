@@ -7,45 +7,38 @@ import {
   startOfWeek,
   endOfDay,
   lastDayOfMonth,
-  parse,
+  parseISO,
 } from 'date-fns';
 
-import { utcToZonedTime } from 'date-fns-tz';
 import type { TimestampPeriod } from '../http/controllers/transactions/GetBalanceGraphController';
 
-const periodUnitsDict = {
-  month: 'week',
-  week: 'day',
-};
-
 const addFn = {
-  week: addDays,
-  month: addWeeks,
-};
+  day: addDays,
+  week: addWeeks,
+} as const;
 
 export function generateDateRange(
   startDate: Date,
   endDate: Date,
-  period: 'week' | 'month',
+  period: Period,
+  weekStartsOn: WeekStartValue,
 ): TimestampPeriod {
-  let curr = startDate;
+  let currentDate = startDate;
   const result = [];
 
-  while (isBefore(curr, endDate) || isEqual(curr, endDate)) {
-    if (period === 'week') {
-      result.push(getTime(curr));
-      curr = addFn[period](curr, 1);
+  while (isBefore(currentDate, endDate) || isEqual(currentDate, endDate)) {
+
+    if (period === 'day') {
+      result.push(getTime(currentDate));
+      currentDate = addFn[period](currentDate, 1);
+    } else if (period === 'week'){
+      result.push(getTime(startOfWeek(currentDate, { weekStartsOn: weekStartsOn })));
+      currentDate = addFn[period](currentDate, 1);
     } else {
-      result.push(getTime(startFn[period](curr)));
-      curr = addFn[period](curr, 1);
+      throw new Error(`Invalid value to param "period": ${period} . Expected: 'day' or 'week'.`)
     }
   }
-
   return result;
-}
-
-export function getPeriodUnit(period: 'week' | 'month'): string {
-  return periodUnitsDict[period];
 }
 
 interface PeriodDate {
@@ -53,47 +46,43 @@ interface PeriodDate {
   endDate: Date;
 }
 
-const startFn = {
-  week(date: Date): Date {
-    return startOfWeek(date, { weekStartsOn: 1 });
-  },
-  month(date: Date): Date {
-    return startOfWeek(date, { weekStartsOn: 1 });
-  },
-};
-
-export function calculatePeriod(period: 'week' | 'month', date: string): PeriodDate {
-  console.log(`Input date string for period calculation: ${date}`);
-  const parsedDate = parseDate(date);
-  const baseDate = convertToTimeZone(parsedDate, 'America/Sao_Paulo');
-
-  if (period === 'month') {
-    return calculateMonthPeriod(date, parsedDate);
-  } else {
-    return calculateWeekPeriod(baseDate, period);
-  }
+export function calculatePeriod(date: string): PeriodDate {
+  const startDate = parseISO(date);
+  const endDate = endOfDay(lastDayOfMonth(startDate));
+  return { startDate, endDate };
 }
 
-function parseDate(date: string): Date {
-  const parsedDate = parse(date, 'yyyy-MM', new Date());
+export function parseYYYYMMtoDate(date: string): Date {
+  const parsedDate = parseISO(date)
   if (!/^\d{4}-\d{2}$/.test(date) || isNaN(parsedDate.getTime())) {
     throw new Error(`Invalid date format: ${date}. Expected format: 'yyyy-MM'.`);
   }
   return parsedDate;
 }
 
-function convertToTimeZone(date: Date, timeZone: string): Date {
-  return utcToZonedTime(date, timeZone);
+export function isValidFormatYYYYMM(yyyyMM: string): boolean {
+  if (!yyyyMM || typeof yyyyMM !== 'string' || yyyyMM.length !== 7 || !/^\d{4}-\d{2}$/.test(yyyyMM)) {
+    return false;
+  } else {
+    return true
+  }
 }
 
-function calculateMonthPeriod(date: string, parsedDate: Date): PeriodDate {
-  const startDate = parse(`${date}-01`, 'yyyy-MM-dd', new Date());
-  const endDate = lastDayOfMonth(parsedDate);
-  return { startDate, endDate };
+export const WeekStartsDict = {
+  sunday: 0,
+  monday: 1,
+  tuesday: 2,
+  wednesday: 3,
+  thursday: 4,
+  friday: 5,
+  saturday: 6,
+} as const;
+
+export type WeekStartKey = keyof typeof WeekStartsDict;
+export type WeekStartValue = typeof WeekStartsDict[keyof typeof WeekStartsDict];
+
+export function getWeekValue(day: WeekStartKey) {
+  return WeekStartsDict[day];
 }
 
-function calculateWeekPeriod(baseDate: Date, period: 'week' | 'month'): PeriodDate {
-  const startDate = startFn[period](baseDate);
-  const endDate = endOfDay(baseDate);
-  return { startDate, endDate };
-}
+export type Period = 'week' | 'day';

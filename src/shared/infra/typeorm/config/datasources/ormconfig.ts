@@ -1,9 +1,10 @@
 import { DataSource } from 'typeorm';
 import { join } from 'path';
 import { env } from '../../../../../env';
-
 const migrationsPath = join(__dirname, '../../migrations/*{.ts,.js}');
 const entitiesPath = join(__dirname, '../../../../../modules/**/entities/*{.ts,.js}');
+
+process.env.TZ = env.TZ || 'UTC';
 
 export const dataSource = new DataSource({
   migrationsTableName: 'migrations',
@@ -19,4 +20,5 @@ export const dataSource = new DataSource({
   name: 'default',
   migrations: [migrationsPath],
   entities: [entitiesPath],
+  useUTC: true,
 });

@@ -1,6 +1,7 @@
 import Transaction from '../entities/Transaction';
 import { dataSource } from '../../../shared/infra/typeorm/config/datasources/ormconfig';
 import { format } from 'date-fns';
+import type { WeekStartValue } from '@/shared/infra/date';
 
 interface Balance {
   income: number;
@@ -131,11 +132,15 @@ export const TransactionsRepository = dataSource.getRepository(Transaction).exte
       user_id: string,
       startDate: Date,
       endDate: Date,
-      unit = 'day',
+      unit: 'day' | 'week',
+      weekStartsOn: WeekStartValue,
     ): Promise<GraphEntry[]> {
+      //helper to adjust week start day in date_trunc
+      weekStartsOn = (8 - weekStartsOn) % 7;
+
       const entries: GraphEntry[] = await this.createQueryBuilder('transactions')
         .select(
-          `EXTRACT(EPOCH FROM date_trunc(:unit, transactions.transaction_date)) * 1000`,
+          `EXTRACT(EPOCH FROM (date_trunc(:unit, transactions.transaction_date + INTERVAL '${weekStartsOn} day') - INTERVAL '${weekStartsOn} day' )) * 1000`,
           'point',
         )
         .addSelect('transactions.type', 'type')
