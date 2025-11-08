@@ -43,7 +43,7 @@
     "reflect-metadata": "0.1.13",
     "swagger-jsdoc": "6.2.8",
     "swagger-ui-express": "5.0.1",
-    "typeorm": "0.3.16",
+    "typeorm": "0.3.26",
     "zod": "4.1.9"
   },
   "devDependencies": {
