@@ -1,6 +1,6 @@
 {
   "name": "myfinances-api",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "main": "index.js",
   "type": "commonjs",
   "license": "MIT",
@@ -77,21 +77,36 @@
     "typescript-eslint": "8.44.0"
   },
   "release": {
-  "branches": ["master"],
+    "branches": [
+      "master"
+    ],
     "plugins": [
       "@semantic-release/commit-analyzer",
       "@semantic-release/release-notes-generator",
-      ["@semantic-release/changelog", {
-        "changelogFile": "CHANGELOG.md"
-      }],
-      ["@semantic-release/npm", {
-        "npmPublish": false
-      }],
+      [
+        "@semantic-release/changelog",
+        {
+          "changelogFile": "CHANGELOG.md"
+        }
+      ],
+      [
+        "@semantic-release/npm",
+        {
+          "npmPublish": false
+        }
+      ],
       "@semantic-release/github",
-      ["@semantic-release/git", {
-        "assets": ["package.json", "package-lock.json", "CHANGELOG.md"],
-        "message": "chore(release): release <%= nextRelease.version %> [skip ci]\n\n<%= nextRelease.notes %>"
-      }]
+      [
+        "@semantic-release/git",
+        {
+          "assets": [
+            "package.json",
+            "package-lock.json",
+            "CHANGELOG.md"
+          ],
+          "message": "chore(release): release <%= nextRelease.version %> [skip ci]\n\n<%= nextRelease.notes %>"
+        }
+      ]
     ]
   }
 }
