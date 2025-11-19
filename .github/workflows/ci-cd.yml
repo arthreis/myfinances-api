@@ -1,21 +1,20 @@
-name: CI/CD Docker Image
+name: build-and-deploy
 
 on:
   push:
-    branches: ["master"]
+    branches: ["develop", "master"]
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/${{ secrets.APP_NAME }}
 
 jobs:
-  release_and_build:
+  quality:
+    name: Run tests
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      packages: write
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -24,16 +23,50 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
-      - name: Semantic Release 🚀
+      - name: Run tests
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release
+          NODE_ENV: test
+        run: npm run test
 
-      - name: Get current version from package.json
-        id: package
-        run: echo "VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
+  build-and-push:
+    name: Build and push image
+    needs: quality
+    runs-on: ubuntu-latest
+    outputs:
+      sha_tag: ${{ steps.tags.outputs.sha_tag }}
+      channel_tag: ${{ steps.tags.outputs.channel_tag }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Define image tags
+        id: tags
+        run: |
+          set -euo pipefail
+          IMAGE="${{ env.IMAGE_NAME }}"
+          SHA_TAG="${IMAGE}:${GITHUB_SHA}"
+          if [[ "${GITHUB_REF}" == "refs/heads/master" ]]; then
+            CHANNEL_TAG="${IMAGE}:production"
+            EXTRA_TAGS="${IMAGE}:latest"
+          else
+            CHANNEL_TAG="${IMAGE}:staging"
+            EXTRA_TAGS=""
+          fi
+          {
+            echo "sha_tag=${SHA_TAG}"
+            echo "channel_tag=${CHANNEL_TAG}"
+            echo "tags<<'EOF'"
+            echo "${SHA_TAG}"
+            echo "${CHANNEL_TAG}"
+            if [[ -n "${EXTRA_TAGS}" ]]; then
+              echo "${EXTRA_TAGS}"
+            fi
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -41,12 +74,118 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and push Docker image
+      - name: Build and push
         uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
           push: true
-          tags: |
-            ${{ secrets.DOCKER_USERNAME }}/${{ secrets.APP_NAME }}:${{ env.VERSION }}
-            ${{ secrets.DOCKER_USERNAME }}/${{ secrets.APP_NAME }}:latest
+          tags: ${{ steps.tags.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy-staging:
+    name: Deploy to staging
+    if: github.ref == 'refs/heads/develop'
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    concurrency:
+      group: deploy-staging
+      cancel-in-progress: false
+    environment:
+      name: staging
+      url: ${{ vars.STAGING_URL }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Upload compose file
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT }}
+          source: "docker-compose.deploy.yml"
+          target: ${{ secrets.SERVER_TARGET_DIR_STAGING }}
+
+      - name: Deploy STAGING
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT }}
+          script: |
+            set -euo pipefail
+            export NODE_ENV=staging
+            export STACK_NAME=staging
+            export HOST_PORT=${{ secrets.STAGING_PORT }}
+            export INTERNAL_PORT=${{ secrets.STAGING_PORT }}
+            export APP_IMAGE="${{ needs.build-and-push.outputs.channel_tag }}"
+            cd ${{ secrets.SERVER_TARGET_DIR_STAGING }}
+            echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+            compose() {
+              if docker compose version >/dev/null 2>&1; then
+                docker compose "$@"
+              else
+                docker-compose "$@"
+              fi
+            }
+            compose -f docker-compose.deploy.yml pull
+            compose -f docker-compose.deploy.yml up -d --remove-orphans
+            compose -f docker-compose.deploy.yml exec -T api npm run migration:run:deploy
+            docker image prune -af --filter "until=24h"
+
+  deploy-production:
+    name: Deploy to production
+    if: github.ref == 'refs/heads/master'
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    environment:
+      name: production
+      url: ${{ vars.PRODUCTION_URL }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Upload compose file
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT }}
+          source: "docker-compose.deploy.yml"
+          target: ${{ secrets.SERVER_TARGET_DIR_PRODUCTION }}
+
+      - name: Deploy PRODUCTION
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT }}
+          script: |
+            set -euo pipefail
+            export NODE_ENV=production
+            export STACK_NAME=production
+            export HOST_PORT=${{ secrets.PRODUCTION_PORT }}
+            export INTERNAL_PORT=${{ secrets.PRODUCTION_PORT }}
+            export APP_IMAGE="${{ needs.build-and-push.outputs.channel_tag }}"
+            cd ${{ secrets.SERVER_TARGET_DIR_PRODUCTION }}
+            echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+            compose() {
+              if docker compose version >/dev/null 2>&1; then
+                docker compose "$@"
+              else
+                docker-compose "$@"
+              fi
+            }
+            compose -f docker-compose.deploy.yml pull
+            compose -f docker-compose.deploy.yml up -d --remove-orphans
+            compose -f docker-compose.deploy.yml exec -T api npm run migration:run:deploy
+            docker image prune -af --filter "until=24h"

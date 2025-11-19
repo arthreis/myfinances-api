@@ -1,0 +1,38 @@
+services:
+  api:
+    image: ${APP_IMAGE}
+    container_name: "app-myfinances-api-${STACK_NAME:-prod}"
+    restart: unless-stopped
+    env_file: ".env.${NODE_ENV}"
+    environment:
+      - DB_HOST=app-myfinances-db-${STACK_NAME:-prod}
+      - APP_PORT=${INTERNAL_PORT:-3333}
+    ports:
+      - "${HOST_PORT:-3333}:${INTERNAL_PORT:-3333}"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - myfinances_net
+
+  db:
+    image: postgres:16
+    container_name: "app-myfinances-db-${STACK_NAME:-prod}"
+    restart: unless-stopped
+    env_file:
+      - ".env.${NODE_ENV}"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - myfinances_db_data:/var/lib/postgresql/data
+    networks:
+      - myfinances_net
+
+networks:
+  myfinances_net:
+
+volumes:
+  myfinances_db_data:

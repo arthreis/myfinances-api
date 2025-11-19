@@ -79,6 +79,36 @@ A API estará rodando em:
 
 ---
 
+## 🚀 CI/CD e Deploy Automatizado
+
+O workflow `.github/workflows/ci-cd.yml` roda automaticamente em pushes para `develop` (staging) e `master` (produção) ou manualmente via **Run workflow**. O pipeline:
+
+1. Executa testes (`quality` job).
+2. Gera e publica uma imagem Docker multi-stage com tags por commit (`<sha>`) e por ambiente (`staging` ou `production`; `latest` é reservado para `master`).
+3. Faz o deploy via SSH usando `docker-compose.deploy.yml`, mantendo staging e produção em portas distintas naquele mesmo servidor.
+
+### Segredos / variáveis esperadas no GitHub
+
+| Nome | Uso |
+|------|-----|
+| `APP_NAME` | Nome usado na tag da imagem (`<user>/<app>`). |
+| `DOCKER_USERNAME`, `DOCKER_PASSWORD` | Login no Docker Hub. |
+| `SERVER_HOST`, `SERVER_PORT`, `SERVER_USER`, `SERVER_SSH_KEY` | Acesso SSH ao Ubuntu Server (porta padrão `22`). |
+| `SERVER_TARGET_DIR_STAGING`, `SERVER_TARGET_DIR_PRODUCTION` | Diretórios remotos para cada stack (ex.: `/srv/docker/myfinances/api/staging`). |
+| `STAGING_PORT`, `PRODUCTION_PORT` | Portas expostas no host; escolha valores diferentes (ex.: `3334` e `3333`). |
+| `vars.STAGING_URL`, `vars.PRODUCTION_URL` (opcional) | URLs exibidas na aba **Deployments** do GitHub. |
+
+> Caso precise expor o Postgres externamente, adicione variáveis extras (`STAGING_DB_PORT`, `PRODUCTION_DB_PORT`) e exporte-as antes do `docker compose up`.
+
+### Preparando o servidor Ubuntu
+
+1. Instale Docker Engine + plugin Compose (`docker compose`).  
+2. Crie os diretórios indicados nos segredos `SERVER_TARGET_DIR_*` e copie para cada um os arquivos `.env.production` e `.env.staging` (com valores reais). Esses arquivos **não** devem ser versionados no servidor público.  
+3. Garanta que o usuário SSH esteja no grupo `docker` ou tenha permissão para executar os comandos do workflow.  
+4. Para o primeiro deploy, basta executar um push nas branches correspondentes; o workflow fará `scp` do `docker-compose.deploy.yml`, fará login no Docker Hub e subirá/atualizará a stack com o nome (`STACK_NAME`) correto para evitar conflitos entre staging e produção.
+
+---
+
 ## 📄 Licença
 
 Este projeto está sob a licença **MIT**.

@@ -16,6 +16,7 @@
     "docker:dev": "NODE_ENV=development docker compose -f docker-compose.yml up --build",
     "typeorm": "tsx ./node_modules/typeorm/cli.js -d src/shared/infra/typeorm/config/datasources/ormconfig.ts",
     "migration:run": "NODE_ENV=development npm run typeorm migration:run",
+    "migration:run:deploy": "node ./node_modules/typeorm/cli.js -d dist/shared/infra/typeorm/config/datasources/ormconfig.js migration:run",
     "migration:create": "NODE_ENV=development npm run typeorm migration:create",
     "migration:revert": "NODE_ENV=development npm run typeorm migration:revert",
     "migration:generate": "NODE_ENV=development npm run typeorm migration:generate",
